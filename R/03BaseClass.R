@@ -3,6 +3,11 @@
 setClass("BaseClass", representation(objectname="character", objectoperation="character", isValid="logical", phase="PhaseClass", data="DataClass"),
          prototype(isValid=FALSE))
 
+setMethod("getname", signature(object = "BaseClass"), function(object)
+{
+  object@objectname
+})
+
 setGeneric("transformdata", function(object, dataobject) {
   standardGeneric("transformdata")
 })
@@ -35,6 +40,9 @@ addPreprocessor("noscale", "identity(data)", phase=scaling)
 
 ## This initialization can be done
 
+
+
+
 naomit1 <- new("naomit")
 addtophase(imputation) <- naomit1
 knnimpute1 <- new("knnimpute")
@@ -45,3 +53,5 @@ centering1 <- new("centerscale")
 addtophase(scaling) <- centering1
 noscaling <- new("noscale")
 addtophase(scaling) <- noscaling
+
+#imputation <- initializephaseclassobject("imputation", c(naomit1, knnimpute1), TRUE)

@@ -39,17 +39,13 @@ addtoslot(grid) <- creategrid(grid)
 
 ## TRANSFORM
 
-initialize <- function(classname, dataobject){
-  a <- new(classname)
-
-  if (class(dataobject)=="DataClass") {b <- transformdata(a, dataobject)}
-  else {b <- transformdata(a, dataobject@data)}
-  a@data <- b
-  a
+initializesubclassobject <- function(classname, dataobject){
+  subclassobject <- new(classname)
+  if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)} # first column in grid with data as argument
+  else {transformeddata <- transformdata(subclassobject, dataobject@data)} # subsequent columns in grid with previous subclass object as argument
+  subclassobject@data <- transformeddata
+  return(subclassobject)
 }
-
-a  <- initialize("naomit", data)
-b <- initialize("scale", a)
 
 ## DATA FORMATION
 

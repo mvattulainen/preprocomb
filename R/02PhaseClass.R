@@ -9,10 +9,17 @@
 
 setClass("PhaseClass", representation(objectname="character", preprotransformations="list", preimpute="logical"))
 
-phaseobject <- new("PhaseClass")
 
-imputation <- new("PhaseClass", objectname="imputation", preimpute=TRUE)
-scaling <- new("PhaseClass", objectname="scaling", preimpute=FALSE)
+# This would require that preprocessors belong to phases
+initializephaseclassobject <- function(phasename, preprocessor, preimpute){
+  phaseclassobject <- new("PhaseClass", objectname=phasename, preimpute=preimpute)
+  phaseclassobject@preprotransformations <- preprocessor
+  return(phaseclassobject)
+}
+
+
+#imputation <- new("PhaseClass", objectname="imputation", preimpute=TRUE)
+#scaling <- new("PhaseClass", objectname="scaling", preimpute=FALSE)
 
 setGeneric("addtophase<-", function(object,value) {standardGeneric("addtophase<-")})
 
@@ -29,7 +36,4 @@ setMethod("getname", signature(object = "PhaseClass"), function(object)
   object@objectname
 })
 
-setMethod("getname", signature(object = "BaseClass"), function(object)
-{
-  object@objectname
-})
+
