@@ -17,18 +17,6 @@ initializephaseclassobject <- function(phasename, preprocessor, preimpute){
   return(phaseclassobject)
 }
 
-
-#imputation <- new("PhaseClass", objectname="imputation", preimpute=TRUE)
-#scaling <- new("PhaseClass", objectname="scaling", preimpute=FALSE)
-
-setGeneric("addtophase<-", function(object,value) {standardGeneric("addtophase<-")})
-
-setReplaceMethod(f="addtophase", signature="PhaseClass", definition=function(object,value){
-  object@preprotransformations <- c(object@preprotransformations, c(value))
-  return (object)
-}
-)
-
 setGeneric("getname", function(object) {standardGeneric("getname")})
 
 setMethod("getname", signature(object = "PhaseClass"), function(object)

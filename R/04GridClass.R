@@ -54,14 +54,13 @@ formdata <- function(grid){
   temp <- grid@grid
   temp1 <- dim(temp)
   res <- vector(mode="list", length=temp1[1])
-  for (i in 1:temp1[1]) # all rows
+  for (i in 1:temp1[1]) # processing by row
   {
-    a <- initialize(as.character(temp[i, 1]), data) # imputation
+    a <- initializesubclassobject(as.character(temp[i, 1]), data) # imputation phase, first column in grid
     for (j in 2:temp1[2])
     {
-      a <- initialize(as.character(temp[i,j]), a)
-      res[i] <- a@data
-
+      a <- initializesubclassobject(as.character(temp[i,j]), a)
+      res[i] <- a@data # placing the data for last column on a row
     }
   }
   return(res)

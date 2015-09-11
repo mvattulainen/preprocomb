@@ -9,3 +9,7 @@ data[a, 1] <- NA
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]}
+
+range01 <- function(y){
+  newrange <- (y-min(y))/(max(y)-min(y))
+}
