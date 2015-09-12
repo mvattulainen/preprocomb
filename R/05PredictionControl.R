@@ -61,6 +61,7 @@ preprocomb <- function(predictioncontrol){
 
   for (j in 1:nrow(grid@grid))
   {
+    print(grid@grid[j,])
     dat <- formdatacontent[[j]]
     dat_y <- dat@y
     dat_x <- dat@x

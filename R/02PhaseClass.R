@@ -9,8 +9,17 @@
 
 setClass("PhaseClass", representation(objectname="character", preprotransformations="list", preimpute="logical"))
 
+#' initializephaseclassobject
+#'
+#' initializephaseclassobject is a constructor function for initializing a PhaseClass object.
+#' The function separates class labels from rest of the variables.
+#'
+#' @params phasename (character)
+#' @params preprocessor (list) subclass objects
+#' @params preimpute (logical) whether phase is executed before imputation
 
-# This would require that preprocessors belong to phases
+
+
 initializephaseclassobject <- function(phasename, preprocessor, preimpute){
   phaseclassobject <- new("PhaseClass", objectname=phasename, preimpute=preimpute)
   phaseclassobject@preprotransformations <- preprocessor

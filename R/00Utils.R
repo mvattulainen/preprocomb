@@ -15,7 +15,15 @@ range01 <- function(y){
 }
 
 meanrep <- function(x){
-  x[is.na(x)] =median(x, na.rm=TRUE)
+  x[is.na(x)] =mean(x, na.rm=TRUE)
   x
+}
+
+lofcut <- function(x){
+lof_score <- DMwR::lofactor(x, k=5)
+lof_score[is.finite(lof_score)==FALSE] <- 0 #dirty fix
+lof_cut <- quantile(lof_score, .95)
+lof_obs <- which(lof_score > lof_cut)
+x <- x[-lof_obs,]
 }
 

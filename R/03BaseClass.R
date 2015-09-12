@@ -21,24 +21,28 @@ addPreprocessor <- function(classname, operation, mode="numeric"){
     if (mode=="numeric") {functionexpression <- gsub("basedata", "dataobject@x", operation)}
     if (mode=="all") {functionexpression <- gsub("basedata", "dataobject", operation)}
 
-    temp_x <- eval(parse(text=functionexpression))
-    temp_y1 <- dataobject@y
+    output_x <- eval(parse(text=functionexpression))
+    rownames(output_x) <- seq(1,nrow(output_x),1)
 
-    if (nrow(temp_x)!=nrow(dataobject@x)) {temp_y1 <- temp_y1[as.integer(rownames(temp_x))]} # If rows has been deleted
-    a <- data.frame(x=temp_x, y=temp_y1)
-    a <- initializedataobject(a)
-    a
+    output_y <- dataobject@y # if rows have not been removed
+
+    if (nrow(output_x)!=nrow(dataobject@x)) { # if rows have been deleted
+      output_y <- output_y[as.integer(rownames(output_x))]}
+
+    transformeddata <- data.frame(x=output_x, y=output_y)
+    newdataobject <- initializedataobject(transformeddata)
+    newdataobject
   })
 
 }
 
 # Imputation
-library(DMwR)
+
 library(randomForest)
 addPreprocessor("naomit", "na.omit(basedata)")
 addPreprocessor("meanimpute", "data.frame(apply(basedata, 2, meanrep))")
 addPreprocessor("knnimpute", "knnImputation(basedata, k=5)")
-addPreprocessor("rfimpute", "suppressMessages(rfImpute(basedata@y ~ ., basedata@x))", mode="all")
+addPreprocessor("rfimpute", "rfImpute(basedata@y ~ ., basedata@x)", mode="all")
 
 ## Scaling
 addPreprocessor("scale", "scale(basedata)")
@@ -46,6 +50,10 @@ addPreprocessor("centerscale", "scale(basedata, center=FALSE)")
 addPreprocessor("noscale", "identity(basedata)")
 addPreprocessor("minmaxscale", "data.frame(apply(basedata, 2, range01))")
 addPreprocessor("softmax", "data.frame(apply(basedata, 2, SoftMax))")
+
+# Outlier removal
+addPreprocessor("lof", "lofcut(basedata)")
+addPreprocessor("nooutremove", "identity(basedata)")
 
 ## This initialization can be done
 
@@ -61,5 +69,9 @@ noscaling <- new("noscale")
 minmaxscaling <- new("minmaxscale")
 softmaxscaling <- new("softmax")
 
+lof <- new("lof")
+noout <- new("nooutremove")
+
 imputation <- initializephaseclassobject("imputation", list(naomit1, meanimpute1, knnimpute1, rfimpute1), TRUE)
 scaling <- initializephaseclassobject("scaling", list(basescaling1, centering1, noscaling, minmaxscaling,softmaxscaling), FALSE)
+outlier <- initializephaseclassobject("outlier", list(lof, noout), FALSE)
