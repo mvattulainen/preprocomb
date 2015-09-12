@@ -13,3 +13,9 @@ Mode <- function(x) {
 range01 <- function(y){
   newrange <- (y-min(y))/(max(y)-min(y))
 }
+
+meanrep <- function(x){
+  x[is.na(x)] =median(x, na.rm=TRUE)
+  x
+}
+
