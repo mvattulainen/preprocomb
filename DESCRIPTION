@@ -1,12 +1,16 @@
 Package: preprocomb
 Type: Package
-Title: Preprocessing Combinations for Predictive Classification
+Title: Tools for Optimizing Classification Accuracy by Search from Preprocessing Combinations
 Version: 0.1
 Date: 2015-09-11
 Author: Markus Vattulainen
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
 Description: More about what it does (maybe more than one line)
-License: What license is it under?
+License: GLP-2
+
+Suggests: testthat
+
 LazyData: TRUE
-URL: http://github.com/hadley/dplyr
-BugReports: http://github.com/hadley/dplyr/issues
+URL: http://github.com/mvattulainen/preprocomb
+BugReports: http://github.com/mvattulainen/preprocomb/issues
+Suggests: testthat

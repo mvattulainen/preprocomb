@@ -3,6 +3,7 @@
 a <- sample(1:150, 30)
 data <- iris
 data[a, 1] <- NA
+data <- data[-c(1:20, 50:90, 100:110),]
 
 ## UTILS
 
@@ -25,5 +26,52 @@ lof_score[is.finite(lof_score)==FALSE] <- 0 #dirty fix
 lof_cut <- quantile(lof_score, .95)
 lof_obs <- which(lof_score > lof_cut)
 x <- x[-lof_obs,]
+}
+
+orhcut <- function(x){
+orh_score <- DMwR::outliers.ranking(x)
+orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
+orh_cut <- quantile(orh_rank, .95)
+orh_obs <- which(orh_rank >= orh_cut)
+x <- x[-orh_obs,]
+}
+
+oversample <- function(dataobject){
+
+    freq <- table(dataobject@y)
+    freq <- as.integer(freq) # number of observations in each factor level
+    freqcum <- cumsum(freq) # start of each factor level in sequence of observations
+    freqorder <- order(freq) # smallest factor level first
+    seqend <- freqcum[freqorder[1]] # end of smallest factor level in sequence of observations
+    seqbegin <- seqend - freq[freqorder[1]] # end minus length of smallest factor level
+    samplesize <- freq[freqorder[2]]-freq[freqorder[1]] # different in size: smallest and second smallest
+    extrasample <- sample(seqbegin:seqend, samplesize, replace=TRUE)
+
+    newx <- data.frame(rbind(dataobject@x, dataobject@x[extrasample,]))
+    newy <- factor(c(as.character(dataobject@y), as.character(dataobject@y[extrasample])))
+
+    dataobject@x <- newx
+    dataobject@y <- newy
+    return(dataobject)
+}
+
+rfimputefunc <- function(dataobject){
+  if (any(is.na(dataobject@x))){
+  res <- rfImpute(dataobject@y ~ ., dataobject@x)
+  output_x <- res[,2:ncol(res)]
+  output_y <- res[,1]
+  dataobject@x <- output_x
+  dataobject@y <- output_y
+  }
+  return(dataobject)
+  }
+
+rfimportance <- function(dataobject){
+  oldx <- dataobject@x
+  rf.imp <- randomForest::randomForest(dataobject@y ~ ., data=dataobject@x, ntree=100)
+  rf.used <- randomForest::varUsed(rf.imp, count=FALSE)
+  newx <- oldx[,rf.used]
+  dataobject@x <- newx
+  return(dataobject)
 }
 

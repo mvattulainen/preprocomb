@@ -15,6 +15,8 @@
   addtogrid(grid) <- imputation
   addtogrid(grid) <- scaling
   addtogrid(grid) <- outlier
+  addtogrid(grid) <- sampling
+  addtogrid(grid) <- selection
 
   setGeneric("addtoslot<-", function(object,value) {standardGeneric("addtoslot<-")})
 
@@ -57,6 +59,7 @@
     res <- vector(mode="list", length=temp1[1])
     for (i in 1:temp1[1]) # processing by row
     {
+
       a <- initializesubclassobject(as.character(temp[i, 1]), data) # imputation phase, first column in grid
       for (j in 2:temp1[2])
       {
@@ -69,3 +72,4 @@
   }
 
   formdatacontent <- formdata(grid)
+  print(object.size(formdatacontent))
