@@ -1,44 +1,28 @@
 ## PREDICTION CONTROL
 
-setClass("PredictionControl", representation(predictors="character", data="list", grid="gridClass"))
+#' PredictionControlClass
+#'
+#' PredictionControlClass controls as argument the computations
+#' @slot predictors (character) vector of predictors
+#' @slot grid (GridClass)
 
-initializePredictionControl <- function()
+setClass("PredictionControl", representation(predictors="character", grid="gridClass"))
+
+#' initializepredictioncontrolclassobject
+#'
+#' initializepredictioncontrolclassobject is a constructor function for initializing a PredictionControlClass object.
+#
+#' @param predictors (character) vector of predictors
+#' @param grid (GridClass)
+#' @export
+
+initializepredictioncontrolclassobject <- function(predictors, grid)
 {
-  pcobject <- new("PredictionControl")
+  predictioncontrolclassobject <- new("PredictionControl")
+  predictioncontrolclassobject@predictors <- predictors
+  predictioncontrolclassobject@grid <- grid
+return(predictioncontrolclassobject)
 }
-
-a <- initializePredictionControl()
-
-setGeneric("addpredictortopc<-", function(object,value) {standardGeneric("addpredictortopc<-")})
-
-setReplaceMethod(f="addpredictortopc", signature="PredictionControl", definition=function(object,value){
-  object@predictors <- c(object@predictors, c(value))
-  return (object)
-}
-)
-
-addpredictortopc(a) <- c('rf', 'rpart', 'svmRadial')
-
-setGeneric("adddatatopc<-", function(object,value) {standardGeneric("adddatatopc<-")})
-
-setReplaceMethod(f="adddatatopc", signature="PredictionControl", definition=function(object,value){
-  object@data <- value
-  return (object)
-}
-)
-
-adddatatopc(a) <- formdatacontent
-
-setGeneric("addgridtopc<-", function(object,value) {standardGeneric("addgridtopc<-")})
-
-setReplaceMethod(f="addgridtopc", signature="PredictionControl", definition=function(object,value){
-  object@grid <- value
-  return (object)
-}
-)
-
-addgridtopc(a) <- grid
-
 
 ### PREDICTION
 
@@ -49,13 +33,21 @@ library(rpart)
 library(Metrics)
 library(kernlab)
 
+#' preprocomb
+#'
+#' preprocomb is the main execution function for computing the misclassification rate of each preprocessed grid row
+#
+#' @param predictioncontrol (PredictionControlClass)
+#' @export
+
 preprocomb <- function(predictioncontrol){
 
   out <- data.frame()
   res <- data.frame()
   temp <- data.frame()
 
-  formdatacontent <- predictioncontrol@data
+  formdatacontent1 <- predictioncontrol@grid
+  formdatacontent <- formdatacontent1@data
   grid <- predictioncontrol@grid
   predictors <- predictioncontrol@predictors
 
@@ -87,4 +79,33 @@ preprocomb <- function(predictioncontrol){
   out <- data.frame(cbind(temp5, out))
 }
 
-out <- preprocomb(a)
+#' preproadeq
+#'
+#' preproadeq is the supplementary execution function for computing the adequacy of the (that is, learnability) of each row in grid
+#
+#' @param predictioncontrol (PredictionControlClass)
+#' @export
+
+preproadeq <- function(predictioncontrol){
+
+  formdatacontent1 <- predictioncontrol@grid
+  formdatacontent <- formdatacontent1@data
+  grid <- predictioncontrol@grid
+  res <- numeric(nrow(grid@grid))
+
+  for (j in 1:nrow(grid@grid))
+  {
+    print(j)
+    dat <- formdatacontent[[j]]
+    dat_y <- dat@y
+    dat_x <- dat@x
+
+    model <- randomForest::randomForest(dat_y ~., dat_x, ntree=30)
+    res[j] <- round(mean(model$err.rate[,1]),2)
+    }
+
+  temp5 <- data.frame(apply(grid@grid, 2, as.character))
+  res <- data.frame(cbind(temp5, res))
+}
+
+

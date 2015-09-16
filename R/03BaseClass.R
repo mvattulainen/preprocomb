@@ -1,18 +1,28 @@
 ## PREPROTRANSFORMATIONS
 
-setClass("BaseClass", representation(objectname="character", objectoperation="character", isValid="logical", data="DataClass"),
-         prototype(isValid=FALSE))
+#' BaseClass
+#'
+#' BaseClass represents the preprocessors
+#' @slot objectname (character) name of the object
+#' @slot objectoperation (expression as character string) expression to be computed
+#' @slot isvalid (logical) TRUE, if computation of objectoperation is successful
+#' @slot data (DataClass) data to be used in object operation computation
 
-setMethod("getname", signature(object = "BaseClass"), function(object)
-{
-  object@objectname
-})
+setClass("BaseClass", representation(objectname="character", objectoperation="character", isvalid="logical", data="DataClass"),
+         prototype(isvalid=FALSE))
 
 setGeneric("transformdata", function(object, dataobject) {
   standardGeneric("transformdata")
 })
 
-addPreprocessor <- function(classname, operation, mode="numeric"){
+#' addpreprocessor
+#'
+#' addpreprocessor is a helper function for inheriting subclasses from BaseClass
+#' @param classname (character)
+#' @param operation (expression as character string)
+#' @param mode (character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with slots x (numeeric variables) and y (factor of class labels)
+
+addpreprocessor <- function(classname, operation, mode="numeric"){
 
   setClass(classname, contains="BaseClass", prototype=prototype(objectname=classname, objectoperation=operation))
 
@@ -43,63 +53,36 @@ addPreprocessor <- function(classname, operation, mode="numeric"){
 
 # Imputation
 
-library(randomForest)
-addPreprocessor("naomit", "na.omit(basedata)")
-addPreprocessor("meanimpute", "data.frame(apply(basedata, 2, meanrep))")
-addPreprocessor("knnimpute", "DMwR::knnImputation(basedata, k=5)")
-addPreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
+addpreprocessor("naomit", "na.omit(basedata)")
+addpreprocessor("meanimpute", "data.frame(apply(basedata, 2, meanrep))")
+addpreprocessor("knnimpute", "DMwR::knnImputation(basedata, k=5)")
+addpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
 
 ## Scaling
-addPreprocessor("scale", "scale(basedata,center=FALSE)")
-addPreprocessor("centerscale", "scale(basedata, center=TRUE)")
-addPreprocessor("noscale", "identity(basedata)")
-addPreprocessor("minmaxscale", "data.frame(apply(basedata, 2, range01))")
-addPreprocessor("softmax", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
+addpreprocessor("scale", "scale(basedata,center=FALSE)")
+addpreprocessor("centerscale", "scale(basedata, center=TRUE)")
+addpreprocessor("noscale", "identity(basedata)")
+addpreprocessor("minmaxscale", "data.frame(apply(basedata, 2, range01))")
+addpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
 
 # Outlier removal
-addPreprocessor("lof", "lofcut(basedata)")
-addPreprocessor("orh", "orhcut(basedata)")
-addPreprocessor("nooutremove", "identity(basedata)")
+addpreprocessor("lof", "lofcut(basedata)")
+addpreprocessor("orh", "orhcut(basedata)")
+addpreprocessor("nooutlierremove", "identity(basedata)")
 
 # Class imbalance
 
-addPreprocessor("oversample", "rfimputefunc(basedata)", mode="all")
-addPreprocessor("nosample", "identity(basedata)")
+addpreprocessor("oversample", "rfimputefunc(basedata)", mode="all")
+addpreprocessor("nosample", "identity(basedata)")
 
 
 # Feature selection
 
-addPreprocessor("rfvarused", "rfimportance(basedata)", mode="all")
-addPreprocessor("novarused", "identity(basedata)")
+addpreprocessor("rfvarused", "rfimportance(basedata)", mode="all")
+addpreprocessor("noselection", "identity(basedata)")
 
-## This initialization can be done
-
-
-naomit1 <- new("naomit")
-knnimpute1 <- new("knnimpute")
-meanimpute1 <- new("meanimpute")
-rfimpute1 <- new("randomforestimpute")
-
-basescaling1 <- new("scale")
-centering1 <- new("centerscale")
-noscaling <- new("noscale")
-minmaxscaling <- new("minmaxscale")
-softmaxscaling <- new("softmax")
-
-lof <- new("lof")
-orh <- new("orh")
-noout <- new("nooutremove")
-
-oversample1 <- new("oversample")
-nosample1 <- new("nosample")
-
-varused1 <- new("rfvarused")
-novarused1 <- new("novarused")
-
-## TESTS
-
-imputation <- initializephaseclassobject("imputation", list(naomit1, meanimpute1, knnimpute1, rfimpute1), TRUE)
-scaling <- initializephaseclassobject("scaling", list(basescaling1, centering1, noscaling, minmaxscaling,softmaxscaling), FALSE)
-outlier <- initializephaseclassobject("outlier", list(lof, orh, noout), FALSE)
-sampling <- initializephaseclassobject("sampling", list(oversample1, nosample1), FALSE)
-selection <- initializephaseclassobject("selection", list(varused1, novarused1), FALSE)
+imputation <- initializephaseclassobject("imputation", list("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
+scaling <- initializephaseclassobject("scaling", list("noscale", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
+outlier <- initializephaseclassobject("outlier", list("nooutlierremove", "lof", "orh"), FALSE)
+sampling <- initializephaseclassobject("sampling", list("nosample", "oversample"), FALSE)
+selection <- initializephaseclassobject("selection", list("noselection", "rfvarused"), FALSE)

@@ -7,9 +7,18 @@ Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
 Description: More about what it does (maybe more than one line)
 License: GLP-2
-
-Suggests: testthat
-
+Imports:
+    DMwR,
+    randomForest,
+    Metrics,
+    caret,
+    caretEnsemble,
+    arules,
+    rpart,
+    kernlab,
+    methods
+Suggests:
+    testthat
 LazyData: TRUE
 URL: http://github.com/mvattulainen/preprocomb
 BugReports: http://github.com/mvattulainen/preprocomb/issues

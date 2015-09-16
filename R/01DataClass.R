@@ -11,9 +11,9 @@ setClass("DataClass", representation(x="data.frame", y="factor"))
 #' initializedataobject
 #'
 #' initializedataobject is a constructor function for initializing a DataClass object.¨¨
-#' The function separates class labels from rest of the variables.
+#' The function separates class labels from rest of the (numerical) variables.
 #'
-#' @params data (data frame)
+#' @param data (data frame)
 #' @return (DataClass) object
 
 initializedataobject <- function(data){
@@ -25,4 +25,4 @@ initializedataobject <- function(data){
   return(dataclassobject)
 }
 
-data <- initializedataobject(data)
+

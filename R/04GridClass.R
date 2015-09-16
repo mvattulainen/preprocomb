@@ -1,46 +1,48 @@
   ## GRID
 
-  setClass("gridClass", representation(grid="data.frame", phases="list"))
+#' GridClass
+#'
+#' GridClass represents the grid
+#' @slot grid (data frame) combinations of preprocessors
+#' @slot data (list) list of data frames computed from each row in grid
 
-  grid <- new("gridClass")
+setClass("gridClass", representation(grid="data.frame", data="list"))
 
-  setGeneric("addtogrid<-", function(object,value) {standardGeneric("addtogrid<-")})
+  #' initializegridclassobject
+  #'
+  #' initializegridclassobject is a constructor function for initializing a GridClass object.
+  #
+  #' @param phases (list)
+  #' @param data (DataClass)
+  #' @export
 
-  setReplaceMethod(f="addtogrid", signature="gridClass", definition=function(object,value){
-    object@phases <- c(object@phases, c(getname(value)))
-    return (object)
+  initializegridclassobject <- function(phases, data){
+    gridclassobject <- new("gridClass")
+    #gridclassobject@phases <- phases
+
+    ## gridformation
+    # create a list with phases as elements and preprocessors as sub elements
+    # extract the name of the preprocessor
+
+    templist <- lapply(phases, function(x) eval(as.name(x))@preprotransformations)
+    grid <- expand.grid(templist)
+    colnames(grid) <- unlist(phases)
+    gridclassobject@grid <- grid
+
+    gridclassobject@data <- formdata(grid, data)
+
+    return(gridclassobject)
   }
-  )
-
-  addtogrid(grid) <- imputation
-  addtogrid(grid) <- scaling
-  addtogrid(grid) <- outlier
-  addtogrid(grid) <- sampling
-  addtogrid(grid) <- selection
-
-  setGeneric("addtoslot<-", function(object,value) {standardGeneric("addtoslot<-")})
-
-  setReplaceMethod(f="addtoslot", signature="gridClass", definition=function(object,value){
-    object@grid <- value
-    return (object)
-  }
-  )
-
-  setGeneric("creategrid", function(object) {standardGeneric("creategrid")})
-
-  setMethod("creategrid", signature(object = "gridClass"), function(object)
-  {
-    a <- object@phases #list of phases
-    b <- lapply(a, function(x) eval(as.name(x))@preprotransformations) # list having two lists
-    e <- lapply(b, function(x) lapply(x, function(x) x@objectname))
-    v <- expand.grid(e)
-    colnames(v) <- unlist(a)
-    return(v)
-  })
-
-  addtoslot(grid) <- creategrid(grid)
 
   ## TRANSFORM
+
+  #' initializesubclassobject
+  #'
+  #' initializesubclassobject is a constructor function for initializing sub class objects from BaseClass.
+  #
+  #' @param classname (character)
+  #' @param dataobject (DataClass or sub class of BaseClass)
+  #' @export
 
   initializesubclassobject <- function(classname, dataobject){
     subclassobject <- new(classname)
@@ -52,9 +54,16 @@
 
   ## DATA FORMATION
 
-  formdata <- function(grid){
+  #' formdata
+  #'
+  #' formdata function takes grid and a DataClass object as arguments and computes the data for each row in grid
+  #
+  #' @param grid (GridClass)
+  #' @param data (DataClass)
 
-    temp <- grid@grid
+  formdata <- function(grid, data){
+
+    temp <- grid
     temp1 <- dim(temp)
     res <- vector(mode="list", length=temp1[1])
     for (i in 1:temp1[1]) # processing by row
@@ -71,5 +80,4 @@
 
   }
 
-  formdatacontent <- formdata(grid)
-  print(object.size(formdatacontent))
+
