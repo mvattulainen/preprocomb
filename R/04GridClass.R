@@ -1,4 +1,7 @@
-  ## GRID
+#' @include 03BaseClass.R
+NULL
+
+## GRID
 
 #' GridClass
 #'
@@ -17,6 +20,14 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
   #' @export
 
   initializegridclassobject <- function(phases, data){
+
+    if(class(phases)!="list"){stop("Argument phases must of a list.")}
+    if(!all(lapply(phases, function(x) class(eval(as.name(x))))=="PhaseClass")){
+      stop("All list elements in argument phases must point to PhaseClass objects.")}
+    if(class(data)!="data.frame"){stop("Argument data must of a data frame.")}
+
+    dataclassobject <- initializedataobject(data)
+
     gridclassobject <- new("gridClass")
     #gridclassobject@phases <- phases
 
@@ -29,7 +40,7 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
     colnames(grid) <- unlist(phases)
     gridclassobject@grid <- grid
 
-    gridclassobject@data <- formdata(grid, data)
+    gridclassobject@data <- formdata(grid, dataclassobject)
 
     return(gridclassobject)
   }
@@ -45,6 +56,7 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
   #' @export
 
   initializesubclassobject <- function(classname, dataobject){
+
     subclassobject <- new(classname)
     if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)} # first column in grid with data as argument
     else {transformeddata <- transformdata(subclassobject, dataobject@data)} # subsequent columns in grid with previous subclass object as argument

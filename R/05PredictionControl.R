@@ -1,4 +1,14 @@
+#' @include 04GridClass.R
+NULL
+
 ## PREDICTION CONTROL
+
+#' PredictionClass
+#'
+#' PredictionClass stores the computation of preprocomb() or preproadeq()
+#' @slot predictors (character) vector of predictors
+
+setClass("PredictionClass", representation(output="data.frame"))
 
 #' PredictionControlClass
 #'
@@ -18,6 +28,10 @@ setClass("PredictionControl", representation(predictors="character", grid="gridC
 
 initializepredictioncontrolclassobject <- function(predictors, grid)
 {
+  if(class(predictors)!="character"){stop("The argument predictors must a character vector.")}
+  if(is.odd(length(predictors))!=TRUE){stop("The number of predictors must be an even number.")}
+  if(class(grid)!="gridClass"){stop("The argument grid must be a GridClass object.")}
+
   predictioncontrolclassobject <- new("PredictionControl")
   predictioncontrolclassobject@predictors <- predictors
   predictioncontrolclassobject@grid <- grid
@@ -25,13 +39,6 @@ return(predictioncontrolclassobject)
 }
 
 ### PREDICTION
-
-library(caret)
-library(caretEnsemble)
-library(randomForest)
-library(rpart)
-library(Metrics)
-library(kernlab)
 
 #' preprocomb
 #'
@@ -65,10 +72,10 @@ preprocomb <- function(predictioncontrol){
       intrain <- dat1[training,]
       intest <- dat1[-training,]
 
-      model_list <- caretList(y ~., data=intrain, methodList=predictors)
-      prediction <- as.data.frame(predict(model_list, newdata=intest))
+      model_list <- caretEnsemble::caretList(y ~., data=intrain, methodList=predictors)
+      prediction <- as.data.frame(caret::predict(model_list, newdata=intest))
       prediction$vote <- apply(prediction, 1, Mode)
-      con <- as.numeric(lapply(prediction, function(x) ce(as.character(x), as.character(intest$y))))
+      con <- as.numeric(lapply(prediction, function(x) Metrics::ce(as.character(x), as.character(intest$y))))
       temp <- data.frame(rbind(temp, con))
     }
     res <- apply(temp, 2, mean)
@@ -77,6 +84,8 @@ preprocomb <- function(predictioncontrol){
   }
   temp5 <- data.frame(apply(grid@grid, 2, as.character))
   out <- data.frame(cbind(temp5, out))
+  predictionclassobject <- new("PredictionClass", output=out)
+  return(predictionclassobject)
 }
 
 #' preproadeq
@@ -106,6 +115,8 @@ preproadeq <- function(predictioncontrol){
 
   temp5 <- data.frame(apply(grid@grid, 2, as.character))
   res <- data.frame(cbind(temp5, res))
+  predictionclassobject <- new("PredictionClass", output=res)
+  return(predictionclassobject)
 }
 
 

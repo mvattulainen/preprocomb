@@ -1,3 +1,6 @@
+#' @include 00Utils.R
+NULL
+
 ## DATA
 
 #' DataClass
@@ -17,7 +20,10 @@ setClass("DataClass", representation(x="data.frame", y="factor"))
 #' @return (DataClass) object
 
 initializedataobject <- function(data){
-  ## TODO: data argument validation
+
+  if(class(data)!="data.frame"){stop("Argument 'data' is not of class data frame.")}
+  if(sum(sapply(data, is.factor)==TRUE)!=1) {stop("Argument to initializedataobject must have one and only one factor column.")}
+  if(sum(sapply(data, is.numeric)==TRUE)!=ncol(data)-1) {stop("Argument initializedataobject must have only numeric columns and one factor column.")}
 
   dataclassobject <- new("DataClass")
   dataclassobject@x <- data[sapply(data, is.numeric)]

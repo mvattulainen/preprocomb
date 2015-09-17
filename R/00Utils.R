@@ -1,9 +1,14 @@
-## SAMPLE DATA
 
-a <- sample(1:150, 30)
-data <- iris
-data[a, 1] <- NA
-data <- data[-c(1:20, 50:90, 100:110),]
+## NAMESPACE
+
+#' @importFrom randomForest randomForest
+NULL
+
+#' @importFrom methods setClass setGeneric setMethod
+NULL
+
+#' @import arules
+NULL
 
 ## UTILS
 
@@ -19,6 +24,8 @@ meanrep <- function(x){
   x[is.na(x)] =mean(x, na.rm=TRUE)
   x
 }
+
+is.odd <- function(x) x %% 2 != 0
 
 lofcut <- function(x){
 lof_score <- DMwR::lofactor(x, k=5)
@@ -57,7 +64,7 @@ oversample <- function(dataobject){
 
 rfimputefunc <- function(dataobject){
   if (any(is.na(dataobject@x))){
-  res <- rfImpute(dataobject@y ~ ., dataobject@x)
+  res <- randomForest::rfImpute(dataobject@y ~ ., dataobject@x)
   output_x <- res[,2:ncol(res)]
   output_y <- res[,1]
   dataobject@x <- output_x

@@ -1,3 +1,6 @@
+#' @include 02PhaseClass.R
+NULL
+
 ## PREPROTRANSFORMATIONS
 
 #' BaseClass

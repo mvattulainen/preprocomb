@@ -1,6 +1,7 @@
 Package: preprocomb
 Type: Package
-Title: Tools for Optimizing Classification Accuracy by Search from Preprocessing Combinations
+Title: Tools for Optimizing Classification Accuracy by Search from Preprocessing
+    Combinations
 Version: 0.1
 Date: 2015-09-11
 Author: Markus Vattulainen
@@ -15,11 +16,17 @@ Imports:
     caretEnsemble,
     arules,
     rpart,
-    kernlab,
-    methods
-Suggests:
-    testthat
+    methods,
+    C50
 LazyData: TRUE
 URL: http://github.com/mvattulainen/preprocomb
 BugReports: http://github.com/mvattulainen/preprocomb/issues
-Suggests: testthat
+Collate:
+    '00Utils.R'
+    '01DataClass.R'
+    '02PhaseClass.R'
+    '03BaseClass.R'
+    '04GridClass.R'
+    '05PredictionControl.R'
+    '06AnalysisClass.R'
+    'defaultRun.R'

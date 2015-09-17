@@ -1,3 +1,6 @@
+#' @include 01DataClass.R
+NULL
+
 ## PHASE
 
 #' PhaseClass
@@ -19,6 +22,12 @@ setClass("PhaseClass", representation(objectname="character", preprotransformati
 #' @param preimpute (logical) whether phase is executed before imputation
 
 initializephaseclassobject <- function(phasename, preprocessor, preimpute){
+
+  if (class(phasename)!="character") {stop("Argument phasename must must be of class character.")}
+  if (class(preprocessor)!="list") {stop("Argument preprocessor must be a list.")}
+  if (length(preprocessor)==0) {stop("Argument preprocessor must have one or more list elements.")}
+  if (class(preimpute)!="logical") {stop("Argument preimpute must be a logical (TRUE/FALSE).")}
+
   phaseclassobject <- new("PhaseClass", objectname=phasename, preimpute=preimpute)
   phaseclassobject@preprotransformations <- preprocessor
   return(phaseclassobject)
