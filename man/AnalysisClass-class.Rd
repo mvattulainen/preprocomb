@@ -16,6 +16,6 @@ AnalysisClass represents the analysis of preprocessing combinations
 
 \item{\code{importance}}{(data frame) variable importance of phases in predicting misclassification error}
 
-\item{\code{rules}}{assosiation rules for "low" (that is, lowest 10%) misclassification error}
+\item{\code{rules}}{assosiation rules for "low" (that is, last 10 percent) misclassification error}
 }}
 

@@ -7,7 +7,7 @@
 analyze(out)
 }
 \arguments{
-\item{out}{(data frame) out of function preprocomb() or preproadeq()}
+\item{out}{(data frame) out of function preprocomb or preproadeq}
 }
 \description{
 analyze outputs the analysis of preprocessing combinations

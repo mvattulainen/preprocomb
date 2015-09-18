@@ -13,7 +13,7 @@ setClass("DataClass", representation(x="data.frame", y="factor"))
 
 #' initializedataobject
 #'
-#' initializedataobject is a constructor function for initializing a DataClass object.¨¨
+#' initializedataobject is a constructor function for initializing a DataClass object.
 #' The function separates class labels from rest of the (numerical) variables.
 #'
 #' @param data (data frame)

@@ -73,7 +73,7 @@ preprocomb <- function(predictioncontrol){
       intest <- dat1[-training,]
 
       model_list <- caretEnsemble::caretList(y ~., data=intrain, methodList=predictors)
-      prediction <- as.data.frame(caret::predict(model_list, newdata=intest))
+      prediction <- as.data.frame(predict(model_list, newdata=intest))
       prediction$vote <- apply(prediction, 1, Mode)
       con <- as.numeric(lapply(prediction, function(x) Metrics::ce(as.character(x), as.character(intest$y))))
       temp <- data.frame(rbind(temp, con))

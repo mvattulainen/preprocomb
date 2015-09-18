@@ -13,7 +13,7 @@ initializedataobject(data)
 (DataClass) object
 }
 \description{
-initializedataobject is a constructor function for initializing a DataClass object.¨¨
+initializedataobject is a constructor function for initializing a DataClass object.
 The function separates class labels from rest of the (numerical) variables.
 }
 

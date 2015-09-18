@@ -1,15 +1,15 @@
 #' @include 05PredictionControl.R
 NULL
 
+setOldClass("C5.0")
+
 #' AnalysisClass
 #'
 #' AnalysisClass represents the analysis of preprocessing combinations
 #' @slot best (data frame) best (that is, lowest misclassification error) combination
 #' @slot all (data frame) all preprocessing combinations and respective misclassification errors
 #' @slot importance (data frame) variable importance of phases in predicting misclassification error
-#' @slot rules assosiation rules for "low" (that is, lowest 10%) misclassification error
-
-setOldClass("C5.0")
+#' @slot rules assosiation rules for "low" (that is, last 10 percent) misclassification error
 
 setClass("AnalysisClass", representation(best="data.frame", all="data.frame", importance="data.frame", tree="C5.0", rules="data.frame"))
 

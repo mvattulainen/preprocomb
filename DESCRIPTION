@@ -6,8 +6,10 @@ Version: 0.1
 Date: 2015-09-11
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
-Description: More about what it does (maybe more than one line)
-License: GLP-2
+Description: Preprocessing transformations are often interdependent. Preprocomb
+    provides a framawork for defining, combining and analysing preprocessing
+    performance.
+License: GPL-2
 Imports:
     DMwR,
     randomForest,
@@ -15,7 +17,6 @@ Imports:
     caret,
     caretEnsemble,
     arules,
-    rpart,
     methods,
     C50
 LazyData: TRUE

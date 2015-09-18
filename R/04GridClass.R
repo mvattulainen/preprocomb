@@ -1,6 +1,12 @@
 #' @include 03BaseClass.R
 NULL
 
+validatesubclassobject <- function(subclassobject){
+  data <- subclassobject@data
+  temp <- length(caret::nearZeroVar(data@x))
+  if(temp >= 1) {warning("Computation resulted in zero or near zero variance")}
+}
+
 ## GRID
 
 #' GridClass
@@ -45,6 +51,9 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
     return(gridclassobject)
   }
 
+
+
+
   ## TRANSFORM
 
   #' initializesubclassobject
@@ -61,6 +70,7 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
     if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)} # first column in grid with data as argument
     else {transformeddata <- transformdata(subclassobject, dataobject@data)} # subsequent columns in grid with previous subclass object as argument
     subclassobject@data <- transformeddata
+    validatesubclassobject(subclassobject)
     return(subclassobject)
   }
 
