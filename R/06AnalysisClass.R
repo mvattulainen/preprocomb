@@ -18,6 +18,12 @@ setClass("AnalysisClass", representation(best="data.frame", all="data.frame", im
 #' analyze outputs the analysis of preprocessing combinations
 #
 #' @param out (data frame) out of function preprocomb or preproadeq
+#' @examples
+#' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+#' predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
+#' out <- preprocomb(predictioncontrol)
+#' analysis <- analyze(out)
+#' analysis@@best
 #' @export
 
 analyze <- function(out){

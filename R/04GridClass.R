@@ -1,11 +1,49 @@
 #' @include 03BaseClass.R
 NULL
 
-validatesubclassobject <- function(subclassobject){
-  data <- subclassobject@data
-  temp <- length(caret::nearZeroVar(data@x))
-  if(temp >= 1) {warning("Computation resulted in zero or near zero variance")}
-}
+validatedataclassobject <- function(dataclassobject){
+
+  temp <- length(caret::nearZeroVar(dataclassobject@x))
+  dataclassobject@variance <- temp==0
+
+  temp1 <- all(apply(dataclassobject@x, 1:2, is.finite))
+  dataclassobject@finite <- temp1==TRUE
+
+  temp2 <- any(apply(dataclassobject@x, 1:2, is.na))
+  dataclassobject@noNA <- temp2==FALSE
+
+  temp3 <- length(caret::nearZeroVar(data.frame(dataclassobject@y)))
+  dataclassobject@classbalance <- temp3==0
+
+  return(dataclassobject)
+  }
+
+reportexitstatus <- function(datalist){
+
+  variance <- unlist(lapply(datalist, function(x) slot(x, "variance")))
+  finite <- unlist(lapply(datalist, function(x) slot(x, "finite")))
+  noNA <- unlist(lapply(datalist, function(x) slot(x, "noNA")))
+  classbalance <- unlist(lapply(datalist, function(x) slot(x, "classbalance")))
+
+  temp <- all(variance)==TRUE & all(finite)==TRUE & all(noNA)==TRUE & all(classbalance)==TRUE
+
+  if (temp==TRUE) {print("Exit status: Stable computation of misclassification errors expected.")}
+  if (temp==FALSE) {
+                    varianceproblems <- which(variance==FALSE)
+                    finiteproblems <- which(finite==FALSE)
+                    noNAproblems <- which(noNA==FALSE)
+                    classbalanceproblems <- which(classbalance==FALSE)
+                    print("Exit status: Unstable computation of misclassification errors likely.")
+                    if (length(varianceproblems) > 0) { print(paste("Zero or near zero variance in combinations:", varianceproblems))}
+                    if (length(finiteproblems) > 0) { print(paste("Not finite values in combinations:", finiteproblems))}
+                    if (length(noNAproblems) > 0) { print(paste("Missing values in combinations:", noNAproblems))}
+                    if (length(classbalanceproblems) > 0) { print(paste("Class imbalance in combinations:", classbalanceproblems))}
+                    print("1. Get a list of data: yourgridclassobjecthere@data")
+                    print("2. Subset the list with the numbers above to identify the problematic data.")
+                    }
+
+  }
+
 
 ## GRID
 
@@ -23,6 +61,8 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
   #
   #' @param phases (list)
   #' @param data (DataClass)
+  #' @examples
+  #' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
   #' @export
 
   initializegridclassobject <- function(phases, data){
@@ -70,7 +110,6 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
     if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)} # first column in grid with data as argument
     else {transformeddata <- transformdata(subclassobject, dataobject@data)} # subsequent columns in grid with previous subclass object as argument
     subclassobject@data <- transformeddata
-    validatesubclassobject(subclassobject)
     return(subclassobject)
   }
 
@@ -85,20 +124,25 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
 
   formdata <- function(grid, data){
 
-    temp <- grid
-    temp1 <- dim(temp)
-    res <- vector(mode="list", length=temp1[1])
-    for (i in 1:temp1[1]) # processing by row
-    {
+      result <- vector(mode="list", nrow(grid))
 
-      a <- initializesubclassobject(as.character(temp[i, 1]), data) # imputation phase, first column in grid
-      for (j in 2:temp1[2])
+      for (i in 1:nrow(grid)) # processing by row
       {
-        a <- initializesubclassobject(as.character(temp[i,j]), a)
-        res[i] <- a@data # placing the data for last column on a row
+
+      temp <- initializesubclassobject(as.character(grid[i, 1]), data) # computation of first result for a row
+
+        for (j in 2:ncol(grid))
+        {
+        a <- initializesubclassobject(as.character(grid[i,j]), temp)
+        result[i] <- a@data # updating the latest result on a row until last column of grid is updated
+        }
+
       }
-    }
-    return(res)
+
+    # Output: list of DataClass objects
+    result <- lapply(result, validatedataclassobject)
+    reportexitstatus(result)
+    return(result)
 
   }
 

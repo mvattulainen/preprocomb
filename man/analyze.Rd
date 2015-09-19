@@ -12,4 +12,11 @@ analyze(out)
 \description{
 analyze outputs the analysis of preprocessing combinations
 }
+\examples{
+gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
+out <- preprocomb(predictioncontrol)
+analysis <- analyze(out)
+analysis@best
+}
 

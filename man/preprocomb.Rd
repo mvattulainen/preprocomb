@@ -12,4 +12,9 @@ preprocomb(predictioncontrol)
 \description{
 preprocomb is the main execution function for computing the misclassification rate of each preprocessed grid row
 }
+\examples{
+gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
+out <- preprocomb(predictioncontrol)
+}
 

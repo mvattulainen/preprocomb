@@ -9,7 +9,7 @@ NULL
 #' @slot x (data frame)
 #' @slot y (factor) class labels
 
-setClass("DataClass", representation(x="data.frame", y="factor"))
+setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", noNA="logical", classbalance="logical"))
 
 #' initializedataobject
 #'

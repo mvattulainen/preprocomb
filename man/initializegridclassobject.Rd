@@ -14,4 +14,7 @@ initializegridclassobject(phases, data)
 \description{
 initializegridclassobject is a constructor function for initializing a GridClass object.
 }
+\examples{
+gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+}
 

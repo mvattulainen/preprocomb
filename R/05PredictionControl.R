@@ -24,6 +24,9 @@ setClass("PredictionControl", representation(predictors="character", grid="gridC
 #
 #' @param predictors (character) vector of predictors
 #' @param grid (GridClass)
+#' @examples
+#' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+#' predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
 #' @export
 
 initializepredictioncontrolclassobject <- function(predictors, grid)
@@ -45,6 +48,10 @@ return(predictioncontrolclassobject)
 #' preprocomb is the main execution function for computing the misclassification rate of each preprocessed grid row
 #
 #' @param predictioncontrol (PredictionControlClass)
+#' @examples
+#' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+#' predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
+#' out <- preprocomb(predictioncontrol)
 #' @export
 
 preprocomb <- function(predictioncontrol){

@@ -14,4 +14,8 @@ initializepredictioncontrolclassobject(predictors, grid)
 \description{
 initializepredictioncontrolclassobject is a constructor function for initializing a PredictionControlClass object.
 }
+\examples{
+gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
+}
 
