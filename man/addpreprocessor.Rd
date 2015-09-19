@@ -16,4 +16,14 @@ addpreprocessor(classname, operation, mode = "numeric")
 \description{
 addpreprocessor is a helper function for inheriting subclasses from BaseClass
 }
+\examples{
+## Set of examples using only numeric variables and no class labels
+## addpreprocessor("naomit", "na.omit(basedata)")
+## addpreprocessor("scale", "scale(basedata,center=FALSE)")
+## addpreprocessor("nooutlierremove", "identity(basedata)")
+## addpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
+##
+## An example using also class labels and a supporting function
+## addpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
+}
 

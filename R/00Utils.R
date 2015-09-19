@@ -65,10 +65,8 @@ oversample <- function(dataobject){
 rfimputefunc <- function(dataobject){
   if (any(is.na(dataobject@x))){
   res <- randomForest::rfImpute(dataobject@y ~ ., dataobject@x)
-  output_x <- res[,2:ncol(res)]
-  output_y <- res[,1]
-  dataobject@x <- output_x
-  dataobject@y <- output_y
+  dataobject@x <- res[,2:ncol(res)]
+  dataobject@y <- res[,1]
   }
   return(dataobject)
   }

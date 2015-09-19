@@ -24,6 +24,16 @@ setGeneric("transformdata", function(object, dataobject) {
 #' @param classname (character)
 #' @param operation (expression as character string)
 #' @param mode (character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with slots x (numeeric variables) and y (factor of class labels)
+#' @examples
+#' ## Set of examples using only numeric variables and no class labels
+#' ## addpreprocessor("naomit", "na.omit(basedata)")
+#' ## addpreprocessor("scale", "scale(basedata,center=FALSE)")
+#' ## addpreprocessor("nooutlierremove", "identity(basedata)")
+#' ## addpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
+#' ##
+#' ## An example using also class labels and a supporting function
+#' ## addpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
+
 
 addpreprocessor <- function(classname, operation, mode="numeric"){
 
