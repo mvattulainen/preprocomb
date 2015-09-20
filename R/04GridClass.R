@@ -15,6 +15,8 @@ validatedataclassobject <- function(dataclassobject){
   temp3 <- length(caret::nearZeroVar(data.frame(dataclassobject@y)))
   dataclassobject@classbalance <- temp3==0
 
+  #temp4 <- caret::findCorrelation(cor(dataclassobject@x), cutoff = .95)
+
   return(dataclassobject)
   }
 
@@ -53,7 +55,7 @@ reportexitstatus <- function(datalist){
 #' @slot grid (data frame) combinations of preprocessors
 #' @slot data (list) list of data frames computed from each row in grid
 
-setClass("gridClass", representation(grid="data.frame", data="list"))
+setClass("GridClass", representation(grid="data.frame", data="list"))
 
   #' initializegridclassobject
   #'
@@ -72,7 +74,7 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
       stop("All list elements in argument phases must point to PhaseClass objects.")}
     if(class(data)!="data.frame"){stop("Argument data must of a data frame.")}
 
-    dataclassobject <- initializedataobject(data)
+    dataclassobject <- initializedataclassobject(data)
 
     gridclassobject <- new("gridClass")
     #gridclassobject@phases <- phases
@@ -114,13 +116,6 @@ setClass("gridClass", representation(grid="data.frame", data="list"))
   }
 
   ## DATA FORMATION
-
-  #' formdata
-  #'
-  #' formdata function takes grid and a DataClass object as arguments and computes the data for each row in grid
-  #
-  #' @param grid (GridClass)
-  #' @param data (DataClass)
 
   formdata <- function(grid, data){
 

@@ -16,7 +16,7 @@ setClass("PredictionClass", representation(output="data.frame"))
 #' @slot predictors (character) vector of predictors
 #' @slot grid (GridClass)
 
-setClass("PredictionControl", representation(predictors="character", grid="gridClass"))
+setClass("PredictionControl", representation(predictors="character", grid="GridClass"))
 
 #' initializepredictioncontrolclassobject
 #'
@@ -41,20 +41,9 @@ initializepredictioncontrolclassobject <- function(predictors, grid)
 return(predictioncontrolclassobject)
 }
 
-### PREDICTION
+## PREDICTION ================================================
 
-#' preprocomb
-#'
-#' preprocomb is the main execution function for computing the misclassification rate of each preprocessed grid row
-#
-#' @param predictioncontrol (PredictionControlClass)
-#' @examples
-#' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
-#' predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
-#' out <- preprocomb(predictioncontrol)
-#' @export
-
-preprocomb <- function(predictioncontrol){
+combpredict <- function(predictioncontrol){
 
   out <- data.frame()
   res <- data.frame()
@@ -91,39 +80,5 @@ preprocomb <- function(predictioncontrol){
   }
   temp5 <- data.frame(apply(grid@grid, 2, as.character))
   out <- data.frame(cbind(temp5, out))
-  predictionclassobject <- new("PredictionClass", output=out)
-  return(predictionclassobject)
 }
-
-#' preproadeq
-#'
-#' preproadeq is the supplementary execution function for computing the adequacy of the (that is, learnability) of each row in grid
-#
-#' @param predictioncontrol (PredictionControlClass)
-#' @export
-
-preproadeq <- function(predictioncontrol){
-
-  formdatacontent1 <- predictioncontrol@grid
-  formdatacontent <- formdatacontent1@data
-  grid <- predictioncontrol@grid
-  res <- numeric(nrow(grid@grid))
-
-  for (j in 1:nrow(grid@grid))
-  {
-    print(j)
-    dat <- formdatacontent[[j]]
-    dat_y <- dat@y
-    dat_x <- dat@x
-
-    model <- randomForest::randomForest(dat_y ~., dat_x, ntree=30)
-    res[j] <- round(mean(model$err.rate[,1]),2)
-    }
-
-  temp5 <- data.frame(apply(grid@grid, 2, as.character))
-  res <- data.frame(cbind(temp5, res))
-  predictionclassobject <- new("PredictionClass", output=res)
-  return(predictionclassobject)
-}
-
 

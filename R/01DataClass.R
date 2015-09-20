@@ -11,15 +11,15 @@ NULL
 
 setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", noNA="logical", classbalance="logical"))
 
-#' initializedataobject
+#' initializedataclassobject
 #'
-#' initializedataobject is a constructor function for initializing a DataClass object.
+#' initializedataclassobject is a constructor function for initializing a DataClass object.
 #' The function separates class labels from rest of the (numerical) variables.
 #'
 #' @param data (data frame)
 #' @return (DataClass) object
 
-initializedataobject <- function(data){
+initializedataclassobject <- function(data){
 
   if(class(data)!="data.frame"){stop("Argument 'data' is not of class data frame.")}
   if(sum(sapply(data, is.factor)==TRUE)!=1) {stop("Argument to initializedataobject must have one and only one factor column.")}

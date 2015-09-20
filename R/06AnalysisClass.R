@@ -3,43 +3,45 @@ NULL
 
 setOldClass("C5.0")
 
-#' AnalysisClass
+#' PreProCombClass
 #'
-#' AnalysisClass represents the analysis of preprocessing combinations
+#' PreProCombClass represents the analysis of preprocessing combinations
 #' @slot best (data frame) best (that is, lowest misclassification error) combination
 #' @slot all (data frame) all preprocessing combinations and respective misclassification errors
 #' @slot importance (data frame) variable importance of phases in predicting misclassification error
 #' @slot rules assosiation rules for "low" (that is, last 10 percent) misclassification error
 
-setClass("AnalysisClass", representation(best="data.frame", all="data.frame", importance="data.frame", tree="C5.0", rules="data.frame"))
+setClass("PreProCombClass", representation(best="data.frame", all="data.frame", importance="data.frame", tree="C5.0", rules="data.frame"))
 
-#' analyse
+#' preprocomb
 #'
-#' analyze outputs the analysis of preprocessing combinations
+#' preprocomb outputs the analysis of preprocessing combinations
 #
-#' @param out (data frame) out of function preprocomb or preproadeq
+#' @param predictioncontrol (PredictionControlClass)
 #' @examples
 #' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
 #' predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
-#' out <- preprocomb(predictioncontrol)
-#' analysis <- analyze(out)
-#' analysis@@best
+#' result <- preprocomb(predictioncontrol)
+#'
+#' result@@best
+#' result@@all
+#' result@@tree
 #' @export
 
-analyze <- function(out){
-  if(class(out)!="PredictionClass") {stop("Argument out must be a PredictionClass object.")}
-  out <- out@output
+preprocomb <- function(predictioncontrol){
 
-  analysisclassobject <- new("AnalysisClass")
+  out <- combpredict(predictioncontrol)
+
+  preprocombclassobject <- new("PreProCombClass")
 
   tempfactor <- sum(sapply(out, is.factor)) # number of phases
   tempseq <- c(seq(1,tempfactor, 1), ncol(out))
 
   # best combination
-  analysisclassobject@best <- out[which.min(out[,ncol(out)]), tempseq] # BUG
+  preprocombclassobject@best <- out[which.min(out[,ncol(out)]), tempseq] # BUG
 
   # all combinations
-  analysisclassobject@all <- out
+  preprocombclassobject@all <- out
 
   # variable importance
 
@@ -51,21 +53,21 @@ analyze <- function(out){
   temp1 <- data.frame(randomForest::importance(out.rf)[,3])
   temp1$phase <- names(randomForest::importance(out.rf)[,3])
   rownames(temp1) <- NULL
-  analysisclassobject@importance <- temp1
+  preprocombclassobject@importance <- temp1
 
   ## C5.0 Tree
 
   mod1 <- C50::C5.0(target ~ ., data = tempout)
-  analysisclassobject@tree <- mod1
+  preprocombclassobject@tree <- mod1
 
   ##
   temp2 <- data.frame(lapply(tempout, factor))
   trans3 <- as(temp2, "transactions")
   rules <- apriori(trans3, parameter = list(support = 0.01, confidence = 0.8), appearance=list(rhs='target=low', default='lhs'))
   rout <-  as(rules, "data.frame")
-  analysisclassobject@rules <- rout
+  preprocombclassobject@rules <- rout
 
-  return(analysisclassobject)
+  return(preprocombclassobject)
 }
 
 
