@@ -1,24 +1,6 @@
 #' @include 03BaseClass.R
 NULL
 
-validatedataclassobject <- function(dataclassobject){
-
-  temp <- length(caret::nearZeroVar(dataclassobject@x))
-  dataclassobject@variance <- temp==0
-
-  temp1 <- all(apply(dataclassobject@x, 1:2, is.finite))
-  dataclassobject@finite <- temp1==TRUE
-
-  temp2 <- any(apply(dataclassobject@x, 1:2, is.na))
-  dataclassobject@noNA <- temp2==FALSE
-
-  temp3 <- length(caret::nearZeroVar(data.frame(dataclassobject@y)))
-  dataclassobject@classbalance <- temp3==0
-
-  #temp4 <- caret::findCorrelation(cor(dataclassobject@x), cutoff = .95)
-
-  return(dataclassobject)
-  }
 
 reportexitstatus <- function(datalist){
 
@@ -61,22 +43,25 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
   #'
   #' initializegridclassobject is a constructor function for initializing a GridClass object.
   #
-  #' @param phases (list)
-  #' @param data (DataClass)
+  #' @param phases (character) vector
+  #' @param data (data frame)
   #' @examples
-  #' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+  #' gridclassobject <- initializegridclassobject(phases=c("outlier", "selection"), data=iris)
   #' @export
 
   initializegridclassobject <- function(phases, data){
 
-    if(class(phases)!="list"){stop("Argument phases must of a list.")}
+    if(class(phases)!="character"){stop("Argument phases must of a character vector.")}
+
+    phases <- as.list(phases)
+
     if(!all(lapply(phases, function(x) class(eval(as.name(x))))=="PhaseClass")){
       stop("All list elements in argument phases must point to PhaseClass objects.")}
     if(class(data)!="data.frame"){stop("Argument data must of a data frame.")}
 
     dataclassobject <- initializedataclassobject(data)
 
-    gridclassobject <- new("gridClass")
+    gridclassobject <- new("GridClass")
     #gridclassobject@phases <- phases
 
     ## gridformation
@@ -98,22 +83,7 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
 
   ## TRANSFORM
 
-  #' initializesubclassobject
-  #'
-  #' initializesubclassobject is a constructor function for initializing sub class objects from BaseClass.
-  #
-  #' @param classname (character)
-  #' @param dataobject (DataClass or sub class of BaseClass)
-  #' @export
 
-  initializesubclassobject <- function(classname, dataobject){
-
-    subclassobject <- new(classname)
-    if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)} # first column in grid with data as argument
-    else {transformeddata <- transformdata(subclassobject, dataobject@data)} # subsequent columns in grid with previous subclass object as argument
-    subclassobject@data <- transformeddata
-    return(subclassobject)
-  }
 
   ## DATA FORMATION
 
@@ -124,12 +94,12 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
       for (i in 1:nrow(grid)) # processing by row
       {
 
-      temp <- initializesubclassobject(as.character(grid[i, 1]), data) # computation of first result for a row
+      result[i] <- initializesubclassobject(as.character(grid[i, 1]), data) # computation of first result for a row
 
         for (j in 2:ncol(grid))
         {
-        a <- initializesubclassobject(as.character(grid[i,j]), temp)
-        result[i] <- a@data # updating the latest result on a row until last column of grid is updated
+        newsubclassobject <- initializesubclassobject(as.character(grid[i,j]), result[i])
+        result[i] <- newsubclassobject@data # updating the latest result on a same on a row until last column of grid is updated
         }
 
       }

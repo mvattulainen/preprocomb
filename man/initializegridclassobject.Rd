@@ -7,14 +7,14 @@
 initializegridclassobject(phases, data)
 }
 \arguments{
-\item{phases}{(list)}
+\item{phases}{(character) vector}
 
-\item{data}{(DataClass)}
+\item{data}{(data frame)}
 }
 \description{
 initializegridclassobject is a constructor function for initializing a GridClass object.
 }
 \examples{
-gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
+gridclassobject <- initializegridclassobject(phases=c("outlier", "selection"), data=iris)
 }
 

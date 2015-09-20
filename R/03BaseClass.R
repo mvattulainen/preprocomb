@@ -1,11 +1,12 @@
 #' @include 02PhaseClass.R
 NULL
 
-## PREPROTRANSFORMATIONS
+# SUBCLASSES =================================================
 
 #' BaseClass
 #'
-#' BaseClass represents the preprocessors
+#' BaseClass is a virtual class used to inherit operative subclasses from.
+#'
 #' @slot objectname (character) name of the object
 #' @slot objectoperation (expression as character string) expression to be computed
 #' @slot isvalid (logical) TRUE, if computation of objectoperation is successful
@@ -20,7 +21,16 @@ setGeneric("transformdata", function(object, dataobject) {
 
 #' addpreprocessor
 #'
-#' addpreprocessor is a helper function for inheriting subclasses from BaseClass
+#' addpreprocessor is a helper function used to define sub classes of BaseClass.
+#' Specifically, sub classes include the operation to be executed to preprocess data.
+#'
+#' If operation deletes rows in numeric data such as outliers, the corresponding class
+#' labels are deleted automatically.
+#'
+#' If operation uses both numeric columns and class labels, the defined operation must
+#' return both.
+#'
+#'
 #' @param classname (character)
 #' @param operation (expression as character string)
 #' @param mode (character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with slots x (numeeric variables) and y (factor of class labels)
@@ -58,11 +68,26 @@ addpreprocessor <- function(classname, operation, mode="numeric"){
       output_y <- output_y[as.integer(rownames(output_x))]}
 
     transformeddata <- data.frame(x=output_x, y=output_y)
-    newdataobject <- initializedataobject(transformeddata)
+    newdataobject <- initializedataclassobject(transformeddata)
     newdataobject
   })
 
 }
+
+initializesubclassobject <- function(classname, dataobject){
+
+  subclassobject <- new(classname)
+
+  if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)}
+  else {transformeddata <- transformdata(subclassobject, dataobject@data)}
+
+  subclassobject@data <- transformeddata
+
+  return(subclassobject)
+
+}
+
+# DEFAULT PREPROCESSORS AND PHASES ==========================
 
 # Imputation
 
@@ -94,8 +119,8 @@ addpreprocessor("nosample", "identity(basedata)")
 addpreprocessor("rfvarused", "rfimportance(basedata)", mode="all")
 addpreprocessor("noselection", "identity(basedata)")
 
-imputation <- initializephaseclassobject("imputation", list("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
-scaling <- initializephaseclassobject("scaling", list("noscale", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
-outlier <- initializephaseclassobject("outlier", list("nooutlierremove", "lof", "orh"), FALSE)
-sampling <- initializephaseclassobject("sampling", list("nosample", "oversample"), FALSE)
-selection <- initializephaseclassobject("selection", list("noselection", "rfvarused"), FALSE)
+imputation <- initializephaseclassobject("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
+scaling <- initializephaseclassobject("scaling", c("noscale", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
+outlier <- initializephaseclassobject("outlier", c("nooutlierremove", "lof", "orh"), FALSE)
+sampling <- initializephaseclassobject("sampling", c("nosample", "oversample"), FALSE)
+selection <- initializephaseclassobject("selection", c("noselection", "rfvarused"), FALSE)

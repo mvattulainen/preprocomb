@@ -17,20 +17,21 @@ setClass("PreProCombClass", representation(best="data.frame", all="data.frame", 
 #'
 #' preprocomb outputs the analysis of preprocessing combinations
 #
-#' @param predictioncontrol (PredictionControlClass)
+#' @param predictors (character) vector of predictors (names of models as defined in package caret)
+#' @param grid (GridClass) object
 #' @examples
-#' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
-#' predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
-#' result <- preprocomb(predictioncontrol)
-#'
+#' gridclassobject <- initializegridclassobject(phases=c("outlier", "selection"), data=iris)
+#' result <- preprocomb(predictors=c('rf'), grid=gridclassobject)
 #' result@@best
 #' result@@all
 #' result@@tree
 #' @export
 
-preprocomb <- function(predictioncontrol){
+preprocomb <- function(predictors, grid){
 
-  out <- combpredict(predictioncontrol)
+  predictioncontrolclassobject <- initializepredictioncontrolclassobject(predictors, grid)
+
+  out <- combpredict(predictioncontrolclassobject)
 
   preprocombclassobject <- new("PreProCombClass")
 

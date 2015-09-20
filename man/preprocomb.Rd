@@ -4,19 +4,19 @@
 \alias{preprocomb}
 \title{preprocomb}
 \usage{
-preprocomb(predictioncontrol)
+preprocomb(predictors, grid)
 }
 \arguments{
-\item{predictioncontrol}{(PredictionControlClass)}
+\item{predictors}{(character) vector of predictors (names of models as defined in package caret)}
+
+\item{grid}{(GridClass) object}
 }
 \description{
 preprocomb outputs the analysis of preprocessing combinations
 }
 \examples{
-gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
-predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
-result <- preprocomb(predictioncontrol)
-
+gridclassobject <- initializegridclassobject(phases=c("outlier", "selection"), data=iris)
+result <- preprocomb(predictors=c('rf'), grid=gridclassobject)
 result@best
 result@all
 result@tree

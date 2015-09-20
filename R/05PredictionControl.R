@@ -1,39 +1,16 @@
 #' @include 04GridClass.R
 NULL
 
-## PREDICTION CONTROL
 
-#' PredictionClass
-#'
-#' PredictionClass stores the computation of preprocomb() or preproadeq()
-#' @slot predictors (character) vector of predictors
-
-setClass("PredictionClass", representation(output="data.frame"))
-
-#' PredictionControlClass
-#'
-#' PredictionControlClass controls as argument the computations
-#' @slot predictors (character) vector of predictors
-#' @slot grid (GridClass)
+# setClass("PredictionClass", representation(output="data.frame"))
 
 setClass("PredictionControl", representation(predictors="character", grid="GridClass"))
-
-#' initializepredictioncontrolclassobject
-#'
-#' initializepredictioncontrolclassobject is a constructor function for initializing a PredictionControlClass object.
-#
-#' @param predictors (character) vector of predictors
-#' @param grid (GridClass)
-#' @examples
-#' gridclassobject <- initializegridclassobject(list("outlier", "selection"), iris)
-#' predictioncontrol <- initializepredictioncontrolclassobject(predictors='rf', gridclassobject)
-#' @export
 
 initializepredictioncontrolclassobject <- function(predictors, grid)
 {
   if(class(predictors)!="character"){stop("The argument predictors must a character vector.")}
   if(is.odd(length(predictors))!=TRUE){stop("The number of predictors must be an even number.")}
-  if(class(grid)!="gridClass"){stop("The argument grid must be a GridClass object.")}
+  if(class(grid)!="GridClass"){stop("The argument grid must be a GridClass object.")}
 
   predictioncontrolclassobject <- new("PredictionControl")
   predictioncontrolclassobject@predictors <- predictors
