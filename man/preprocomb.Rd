@@ -4,19 +4,21 @@
 \alias{preprocomb}
 \title{preprocomb}
 \usage{
-preprocomb(predictors, grid)
+preprocomb(predictors, grid, nholdout = 1)
 }
 \arguments{
 \item{predictors}{(character) vector of predictors (names of models as defined in package caret)}
 
 \item{grid}{(GridClass) object}
+
+\item{nholdout}{(integer) number of holdout rounds}
 }
 \description{
 preprocomb outputs the analysis of preprocessing combinations
 }
 \examples{
-gridclassobject <- initializegridclassobject(phases=c("outlier", "selection"), data=iris)
-result <- preprocomb(predictors=c('rf'), grid=gridclassobject)
+grid <- setgrid(phases=c("outlier", "selection"), data=iris)
+result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1)
 result@best
 result@all
 result@tree

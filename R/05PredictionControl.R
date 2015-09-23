@@ -20,7 +20,7 @@ return(predictioncontrolclassobject)
 
 ## PREDICTION ================================================
 
-combpredict <- function(predictioncontrol){
+combpredict <- function(predictioncontrol, nholdout){
 
   out <- data.frame()
   res <- data.frame()
@@ -33,15 +33,12 @@ combpredict <- function(predictioncontrol){
 
   for (j in 1:nrow(grid@grid))
   {
-    print(grid@grid[j,])
     dat <- formdatacontent[[j]]
-    dat_y <- dat@y
-    dat_x <- dat@x
-    dat1 <- data.frame(y=dat_y, x=dat_x)
+    dat1 <- data.frame(y=formdatacontent[[j]]@y, x=formdatacontent[[j]]@x)
 
-    for (i in 1:1){
+    for (i in 1:nholdout){
 
-      training <- sample(1:length(dat_y), 30)
+      training <- sample(1:nrow(dat1), round(nrow(dat1)*0.66,0)) #TODO: caret data partition
       intrain <- dat1[training,]
       intest <- dat1[-training,]
 

@@ -71,12 +71,11 @@ rfimputefunc <- function(dataobject){
   return(dataobject)
   }
 
-rfimportance <- function(dataobject){
-  oldx <- dataobject@x
-  rf.imp <- randomForest::randomForest(dataobject@y ~ ., data=dataobject@x, ntree=100)
-  rf.used <- randomForest::varUsed(rf.imp, count=FALSE)
-  newx <- oldx[,rf.used]
-  dataobject@x <- newx
+rfimportance <- function(dataobject, qt){
+  rf.imp <- randomForest::randomForest(dataobject@y ~ ., data=dataobject@x, ntree=100, keep.forest=FALSE, importance=TRUE)
+  temp <- data.frame(importance(rf.imp))
+  temp1 <- temp$MeanDecreaseAccuracy > quantile(temp$MeanDecreaseAccuracy, qt)
+  dataobject@x  <- dataobject@x[,temp1]
   return(dataobject)
 }
 

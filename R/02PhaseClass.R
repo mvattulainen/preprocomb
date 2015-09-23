@@ -5,15 +5,21 @@ NULL
 
 setClass("PhaseClass", representation(objectname="character", preprotransformations="list", preimpute="logical"))
 
-#' initializephaseclassobject
+#' setphase
 #'
-#' initializephaseclassobject is a constructor function for initializing a PhaseClass object.
+#' setphase is a constructor function for initializing a PhaseClass object.
 #'
 #' @param phasename (character) name of the phase
-#' @param preprocessor (character) vector of subclass objects (see ?addpreprocessor)
-#' @param preimpute (logical) whether phase is executed before imputation
+#' @param preprocessor (character) vector of preprocessors (see ?setpreprocessor) belonging to the phase
+#' @param preimpute (logical) whether phase is executed before missing value imputation
+#' @examples
+#' ## imputation <- setphase("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
+#' ## scaling <- setphase("scaling", c("noscale", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
+#' ## outlier <- setphase("outlier", c("nooutlierremove", "lof", "orh"), FALSE)
+#' ## sampling <- setphase("sampling", c("nosample", "oversample"), FALSE)
+#' ## selection <- setphase("selection", c("noselection", "rfvarused"), FALSE)
 
-initializephaseclassobject <- function(phasename, preprocessor, preimpute){
+setphase <- function(phasename, preprocessor, preimpute){
 
   if (class(phasename)!="character") {stop("Argument 'phasename' must be a character string.")}
   if (class(preprocessor)!="character") {stop("Argument 'preprocessor' must be a character vector.")}

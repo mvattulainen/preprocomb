@@ -19,19 +19,22 @@ setClass("PreProCombClass", representation(best="data.frame", all="data.frame", 
 #
 #' @param predictors (character) vector of predictors (names of models as defined in package caret)
 #' @param grid (GridClass) object
+#' @param nholdout (integer) number of holdout rounds
 #' @examples
-#' gridclassobject <- initializegridclassobject(phases=c("outlier", "selection"), data=iris)
-#' result <- preprocomb(predictors=c('rf'), grid=gridclassobject)
+#' grid <- setgrid(phases=c("outlier", "selection"), data=iris)
+#' grid2 <- setgrid(phases=c("scaling", "selection", "outlier"), data=iris)
+#' result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1)
+#' result2 <- preprocomb(predictors=c('svmRadial'), grid=grid2, nholdout=1)
 #' result@@best
 #' result@@all
 #' result@@tree
 #' @export
 
-preprocomb <- function(predictors, grid){
+preprocomb <- function(predictors, grid, nholdout=1){
 
   predictioncontrolclassobject <- initializepredictioncontrolclassobject(predictors, grid)
 
-  out <- combpredict(predictioncontrolclassobject)
+  out <- combpredict(predictioncontrolclassobject, nholdout)
 
   preprocombclassobject <- new("PreProCombClass")
 
@@ -71,4 +74,7 @@ preprocomb <- function(predictors, grid){
   return(preprocombclassobject)
 }
 
-
+bestcomb <- function(x) {result <- x@best}
+allcombs <- function(x) {result <- x@all}
+plotcomb <- function(x) {plot(result@tree)}
+rulescomb <- function(x) {result <- x@rules}

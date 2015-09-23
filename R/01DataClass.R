@@ -3,7 +3,7 @@ NULL
 
 ## DATA
 
-setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", noNA="logical", classbalance="logical"))
+setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", completeobs="logical", classbalance="logical", nomulticollinearity="logical", ntopratiotwoplus="logical"))
 
 validatedataclassobject <- function(dataclassobject){
 
@@ -14,12 +14,16 @@ validatedataclassobject <- function(dataclassobject){
   dataclassobject@finite <- temp1==TRUE
 
   temp2 <- any(apply(dataclassobject@x, 1:2, is.na))
-  dataclassobject@noNA <- temp2==FALSE
+  dataclassobject@completeobs <- temp2==FALSE
 
   temp3 <- length(caret::nearZeroVar(data.frame(dataclassobject@y)))
   dataclassobject@classbalance <- temp3==0
 
-  #temp4 <- caret::findCorrelation(cor(dataclassobject@x), cutoff = .95)
+  temp4 <- length(caret::findCorrelation(cor(dataclassobject@x, use="pairwise.complete.obs"), cutoff = .95))
+  dataclassobject@nomulticollinearity <- temp4==0
+
+  temp5 <- nrow(dataclassobject@x) > (2*ncol(dataclassobject@x))
+  dataclassobject@ntopratiotwoplus <- temp5==TRUE
 
   return(dataclassobject)
 }
