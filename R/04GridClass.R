@@ -11,8 +11,10 @@ reportexitstatus <- function(datalist){
 
   temp <- all(variance)==TRUE & all(finite)==TRUE & all(completeobs)==TRUE & all(classbalance)==TRUE
 
-  if (temp==TRUE) {print("Exit status: OK: Stable computation of misclassification errors expected.")}
-  if (temp==FALSE) {print("Exit status: Warning: Unstable computation of misclassification errors expected. See: yourgridclassobject@data")}
+  if (temp==TRUE) {result <- c("Exit status: OK: Stable computation of misclassification errors expected.")}
+  if (temp==FALSE) {result <- c("Exit status: Warning: Unstable computation of misclassification errors expected. See: yourgridclassobject@data")}
+
+  return(result)
 
   }
 
@@ -88,7 +90,7 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
 
     # Output: list of DataClass objects
     result <- lapply(result, validatedataclassobject)
-    reportexitstatus(result)
+    print(reportexitstatus(result))
     return(result)
 
   }

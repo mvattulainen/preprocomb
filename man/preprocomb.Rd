@@ -17,10 +17,10 @@ preprocomb(predictors, grid, nholdout = 1)
 preprocomb outputs the analysis of preprocessing combinations
 }
 \examples{
-grid <- setgrid(phases=c("outlier", "selection"), data=iris)
-result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1)
-result@best
-result@all
-result@tree
+## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
+## result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1)
+## result@best
+## result@all
+## result@tree
 }
 

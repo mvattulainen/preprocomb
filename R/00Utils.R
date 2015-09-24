@@ -10,6 +10,9 @@ NULL
 #' @import arules
 NULL
 
+#' @import caret
+NULL
+
 ## UTILS
 
 Mode <- function(x) {
@@ -36,7 +39,7 @@ x <- x[-lof_obs,]
 }
 
 orhcut <- function(x){
-orh_score <- DMwR::outliers.ranking(x)
+orh_score <- suppressMessages(DMwR::outliers.ranking(x))
 orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
 orh_cut <- quantile(orh_rank, .95)
 orh_obs <- which(orh_rank >= orh_cut)
@@ -69,13 +72,24 @@ rfimputefunc <- function(dataobject){
   dataobject@y <- res[,1]
   }
   return(dataobject)
-  }
+}
+
+knnimputefunc <- function(x){
+  if (any(is.na(x))){
+    x <- DMwR::knnImputation(x, k=5)
+      }
+  return(x)
+}
+
 
 rfimportance <- function(dataobject, qt){
   rf.imp <- randomForest::randomForest(dataobject@y ~ ., data=dataobject@x, ntree=100, keep.forest=FALSE, importance=TRUE)
-  temp <- data.frame(importance(rf.imp))
+  temp <- data.frame(randomForest::importance(rf.imp))
   temp1 <- temp$MeanDecreaseAccuracy > quantile(temp$MeanDecreaseAccuracy, qt)
   dataobject@x  <- dataobject@x[,temp1]
   return(dataobject)
 }
 
+globalVariables(c("result"))
+
+#testthat::expect_equal(testpreprocessors(), "Exit status: OK: Stable computation of misclassification errors expected.")

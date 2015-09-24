@@ -21,13 +21,11 @@ setClass("PreProCombClass", representation(best="data.frame", all="data.frame", 
 #' @param grid (GridClass) object
 #' @param nholdout (integer) number of holdout rounds
 #' @examples
-#' grid <- setgrid(phases=c("outlier", "selection"), data=iris)
-#' grid2 <- setgrid(phases=c("scaling", "selection", "outlier"), data=iris)
-#' result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1)
-#' result2 <- preprocomb(predictors=c('svmRadial'), grid=grid2, nholdout=1)
-#' result@@best
-#' result@@all
-#' result@@tree
+#' ## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
+#' ## result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1)
+#' ## result@@best
+#' ## result@@all
+#' ## result@@tree
 #' @export
 
 preprocomb <- function(predictors, grid, nholdout=1){

@@ -96,7 +96,7 @@ initializesubclassobject <- function(classname, dataobject, validate=FALSE){
 
 setpreprocessor("naomit", "na.omit(basedata)")
 setpreprocessor("meanimpute", "data.frame(apply(basedata, 2, meanrep))")
-setpreprocessor("knnimpute", "DMwR::knnImputation(basedata, k=5)")
+setpreprocessor("knnimpute", "knnimputefunc(basedata)")
 setpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
 
 ## Scaling
@@ -107,7 +107,7 @@ setpreprocessor("minmaxscale", "data.frame(apply(basedata, 2, range01))")
 setpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
 
 # Outlier removal
-setpreprocessor("lof", "lofcut(basedata)")
+# setpreprocessor("lof", "lofcut(basedata)")
 setpreprocessor("orh", "orhcut(basedata)")
 setpreprocessor("nooutlierremove", "identity(basedata)")
 
@@ -127,7 +127,7 @@ setpreprocessor("noselection", "identity(basedata)")
 
 imputation <- setphase("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
 scaling <- setphase("scaling", c("noscale", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
-outlier <- setphase("outlier", c("nooutlierremove", "lof", "orh"), FALSE)
+outlier <- setphase("outlier", c("nooutlierremove", "orh"), FALSE)
 sampling <- setphase("sampling", c("nosample", "oversample"), FALSE)
 selection <- setphase("selection", c("noselection", "rfimp50", "rfimp75"), FALSE)
 
@@ -135,10 +135,15 @@ selection <- setphase("selection", c("noselection", "rfimp50", "rfimp75"), FALSE
 
 getpreprocessors <- function() {names(getClass("BaseClass")@subclasses)}
 
-testpreprocessors <- function(preprocessors, data){
+testpreprocessors <- function(preprocessors=NULL, data=NULL){
+  if (is.null(preprocessors)) {preprocessors <- getpreprocessors() }
+  if (is.null(data)) {data <- data.frame(matrix(rbinom(4*30, 1, .5), ncol=4), class=sample(letters[1:2], 30, replace=TRUE))}
   cls <- as.list(preprocessors)
   testdata <- initializedataclassobject(data)
   temp <- lapply(cls, function(x) initializesubclassobject(x, testdata))
   temp1 <- lapply(temp, function(x) slot(x, "data"))
   print(reportexitstatus(temp1))
-}
+  return(temp1)
+  }
+
+

@@ -13,11 +13,8 @@ setClass("PhaseClass", representation(objectname="character", preprotransformati
 #' @param preprocessor (character) vector of preprocessors (see ?setpreprocessor) belonging to the phase
 #' @param preimpute (logical) whether phase is executed before missing value imputation
 #' @examples
-#' ## imputation <- setphase("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
-#' ## scaling <- setphase("scaling", c("noscale", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
-#' ## outlier <- setphase("outlier", c("nooutlierremove", "lof", "orh"), FALSE)
-#' ## sampling <- setphase("sampling", c("nosample", "oversample"), FALSE)
-#' ## selection <- setphase("selection", c("noselection", "rfvarused"), FALSE)
+#' ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
+
 
 setphase <- function(phasename, preprocessor, preimpute){
 

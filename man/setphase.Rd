@@ -17,10 +17,6 @@ setphase(phasename, preprocessor, preimpute)
 setphase is a constructor function for initializing a PhaseClass object.
 }
 \examples{
-## imputation <- setphase("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
-## scaling <- setphase("scaling", c("noscale", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
-## outlier <- setphase("outlier", c("nooutlierremove", "lof", "orh"), FALSE)
-## sampling <- setphase("sampling", c("nosample", "oversample"), FALSE)
-## selection <- setphase("selection", c("noselection", "rfvarused"), FALSE)
+## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
 }
 
