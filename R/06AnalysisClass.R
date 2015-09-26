@@ -19,20 +19,21 @@ setClass("PreProCombClass", representation(best="data.frame", all="data.frame", 
 #
 #' @param predictors (character) vector of predictors (names of models as defined in package caret)
 #' @param grid (GridClass) object
-#' @param nholdout (integer) number of holdout rounds
+#' @param nholdout (integer) number of holdout rounds, defaults to 1
+#' @param search (character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent
 #' @examples
-#' ## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
-#' ## result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1)
+#' ## grid <- setgrid(phases=c("outlier", "selection", "scaling"), data=iris)
+#' ## result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1, search="exhaustive")
 #' ## result@@best
 #' ## result@@all
 #' ## result@@tree
 #' @export
 
-preprocomb <- function(predictors, grid, nholdout=1){
+preprocomb <- function(predictors, grid, nholdout=1, search="exhaustive"){
 
   predictioncontrolclassobject <- initializepredictioncontrolclassobject(predictors, grid)
 
-  out <- combpredict(predictioncontrolclassobject, nholdout)
+  out <- combpredict(predictioncontrolclassobject, nholdout, search)
 
   preprocombclassobject <- new("PreProCombClass")
 

@@ -3,7 +3,7 @@ NULL
 
 ## DATA
 
-setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", completeobs="logical", classbalance="logical", nomulticollinearity="logical", ntopratiotwoplus="logical", mindimensions="logical"))
+setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", completeobs="logical", classbalance="logical", corrbelowdotnine="logical", ntopratiotwoplus="logical", mindimensions="logical"))
 
 validatedataclassobject <- function(dataclassobject){
 
@@ -20,7 +20,7 @@ validatedataclassobject <- function(dataclassobject){
   dataclassobject@classbalance <- temp3==0
 
   temp4 <- length(caret::findCorrelation(cor(dataclassobject@x, use="pairwise.complete.obs"), cutoff = .95))
-  dataclassobject@nomulticollinearity <- temp4==0
+  dataclassobject@corrbelowdotnine <- temp4==0
 
   temp5 <- nrow(dataclassobject@x) > (2*ncol(dataclassobject@x))
   dataclassobject@ntopratiotwoplus <- temp5==TRUE
@@ -31,7 +31,10 @@ validatedataclassobject <- function(dataclassobject){
   return(dataclassobject)
 }
 
-
+settoinvalid <- function(dataclassobject){
+  dataclassobject@isvalid <- FALSE
+  return(dataclassobject)
+}
 
 initializedataclassobject <- function(data){
 
@@ -46,5 +49,7 @@ initializedataclassobject <- function(data){
   dataclassobject <- validatedataclassobject(dataclassobject)
   return(dataclassobject)
 }
+
+
 
 

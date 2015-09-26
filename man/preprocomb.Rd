@@ -4,21 +4,23 @@
 \alias{preprocomb}
 \title{preprocomb}
 \usage{
-preprocomb(predictors, grid, nholdout = 1)
+preprocomb(predictors, grid, nholdout = 1, search = "exhaustive")
 }
 \arguments{
 \item{predictors}{(character) vector of predictors (names of models as defined in package caret)}
 
 \item{grid}{(GridClass) object}
 
-\item{nholdout}{(integer) number of holdout rounds}
+\item{nholdout}{(integer) number of holdout rounds, defaults to 1}
+
+\item{search}{(character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent}
 }
 \description{
 preprocomb outputs the analysis of preprocessing combinations
 }
 \examples{
-## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
-## result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1)
+## grid <- setgrid(phases=c("outlier", "selection", "scaling"), data=iris)
+## result <- preprocomb(predictors=c('rf'), grid=grid, nholdout=1, search="exhaustive")
 ## result@best
 ## result@all
 ## result@tree

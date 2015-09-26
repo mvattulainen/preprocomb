@@ -18,7 +18,8 @@ Imports:
     caretEnsemble,
     arules,
     methods,
-    C50
+    C50,
+    kernlab
 LazyData: TRUE
 URL: http://github.com/mvattulainen/preprocomb
 BugReports: http://github.com/mvattulainen/preprocomb/issues

@@ -1,7 +1,6 @@
 #' @include 03BaseClass.R
 NULL
 
-
 reportexitstatus <- function(datalist){
 
   variance <- unlist(lapply(datalist, function(x) slot(x, "variance")))
@@ -57,7 +56,9 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
     colnames(grid) <- unlist(phases)
     gridclassobject@grid <- grid
 
-    gridclassobject@data <- formdata(grid, dataclassobject)
+    gridclassobject@data <- tryCatch({
+      formdata(grid, dataclassobject)
+    }, error=function(e) return(NAdataclassobject))
 
     return(gridclassobject)
   }
@@ -78,11 +79,11 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
       for (i in 1:nrow(grid)) # processing by row
       {
 
-        result[i] <- initializesubclassobject(as.character(grid[i, 1]), data) # computation of first result for a row
+        result[i] <- prepro(as.character(grid[i, 1]), data) # computation of first result for a row
 
         for (j in 2:ncol(grid))
         {
-        newsubclassobject <- initializesubclassobject(as.character(grid[i,j]), result[[i]])
+        newsubclassobject <- prepro(as.character(grid[i,j]), result[[i]])
         result[i] <- newsubclassobject@data # updating the latest result on a same on a row until last column of grid is updated
         }
 

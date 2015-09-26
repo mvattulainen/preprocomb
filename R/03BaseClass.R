@@ -3,8 +3,7 @@ NULL
 
 # SUBCLASSES =================================================
 
-setClass("BaseClass", representation(objectname="character", objectoperation="character", isvalid="logical", data="DataClass"),
-         prototype(isvalid=FALSE))
+setClass("BaseClass", representation(objectname="character", objectoperation="character", data="DataClass", classificationerror="numeric", callhistory="character"))
 
 setGeneric("transformdata", function(object, dataobject) {
   standardGeneric("transformdata")
@@ -65,7 +64,7 @@ setpreprocessor <- function(classname, operation, mode="numeric"){
 
 }
 
-initializesubclassobject <- function(classname, dataobject, validate=FALSE){
+prepro <- function(classname, dataobject, validate=FALSE){
 
   subclassobject <- new(classname)
 
@@ -84,11 +83,44 @@ initializesubclassobject <- function(classname, dataobject, validate=FALSE){
     subclassobject@data <- validateddata
   }
 
+  return(subclassobject)
 
+}
+
+
+prc <- function(classname, dataobject, predictor="knn"){
+
+  subclassobject <- new(classname)
+
+  if (class(dataobject)=="DataClass") {
+    transformeddata <- transformdata(subclassobject, dataobject)
+    subclassobject@callhistory <- subclassobject@objectname
+    }
+
+  if (class(dataobject)=="data.frame") {
+    transformeddata <- transformdata(subclassobject, initializedataclassobject(dataobject))
+    subclassobject@callhistory <- subclassobject@objectname
+    }
+
+  if (is(dataobject, "BaseClass")==TRUE) {
+    transformeddata <- transformdata(subclassobject, dataobject@data)
+    subclassobject@callhistory <- c(dataobject@callhistory, subclassobject@objectname)
+  }
+
+  subclassobject@data <- transformeddata
+
+  subclassobject@data <- validatedataclassobject(transformeddata)
+
+  subclassobject@classificationerror <- suppressWarnings(subclassprediction(subclassobject, predictor))
 
   return(subclassobject)
 
 }
+
+
+setMethod("show", signature(object = "BaseClass"), function(object){
+  str(object)
+} )
 
 # DEFAULT PREPROCESSORS AND PHASES ==========================
 
@@ -140,7 +172,7 @@ testpreprocessors <- function(preprocessors=NULL, data=NULL){
   if (is.null(data)) {data <- data.frame(matrix(rbinom(4*30, 1, .5), ncol=4), class=sample(letters[1:2], 30, replace=TRUE))}
   cls <- as.list(preprocessors)
   testdata <- initializedataclassobject(data)
-  temp <- lapply(cls, function(x) initializesubclassobject(x, testdata))
+  temp <- lapply(cls, function(x) prepro(x, testdata))
   temp1 <- lapply(temp, function(x) slot(x, "data"))
   print(reportexitstatus(temp1))
   return(temp1)

@@ -7,6 +7,9 @@ NULL
 #' @importFrom methods setClass setGeneric setMethod
 NULL
 
+#' @import kernlab
+NULL
+
 #' @import arules
 NULL
 
@@ -90,6 +93,6 @@ rfimportance <- function(dataobject, qt){
   return(dataobject)
 }
 
-globalVariables(c("result"))
+globalVariables(c("result","combpredict"))
 
 #testthat::expect_equal(testpreprocessors(), "Exit status: OK: Stable computation of misclassification errors expected.")
