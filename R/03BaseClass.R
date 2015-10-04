@@ -3,7 +3,7 @@ NULL
 
 # SUBCLASSES =================================================
 
-setClass("BaseClass", representation(objectname="character", objectoperation="character", data="DataClass", classificationerror="numeric", callhistory="character"))
+setClass("BaseClass", representation(objectname="character", objectoperation="character", data="DataClass", classificationerror="numeric", hopkinsstatistic="numeric", LOFskewness="numeric", callhistory="character"))
 
 setGeneric("transformdata", function(object, dataobject) {
   standardGeneric("transformdata")
@@ -79,8 +79,7 @@ prepro <- function(classname, dataobject, validate=FALSE){
   subclassobject@data <- transformeddata
 
   if (validate==TRUE) {
-    validateddata <- validatedataclassobject(transformeddata)
-    subclassobject@data <- validateddata
+    subclassobject@data <- validatedataclassobject(transformeddata)
   }
 
   return(subclassobject)
@@ -88,7 +87,7 @@ prepro <- function(classname, dataobject, validate=FALSE){
 }
 
 
-prc <- function(classname, dataobject, predictor="knn"){
+prc <- function(classname, dataobject, predictor="knn", nholdout=2, nsharehopkins=3, klof=5){
 
   subclassobject <- new(classname)
 
@@ -111,7 +110,11 @@ prc <- function(classname, dataobject, predictor="knn"){
 
   subclassobject@data <- validatedataclassobject(transformeddata)
 
-  subclassobject@classificationerror <- suppressWarnings(subclassprediction(subclassobject, predictor))
+  subclassobject@classificationerror <- suppressWarnings(subclassprediction(subclassobject, predictor, nholdout))
+
+  subclassobject@hopkinsstatistic <- unname(unlist(clustertend::hopkins((subclassobject@data)@x, n=as.integer(nrow((subclassobject@data)@x)/nsharehopkins)   )))
+
+  subclassobject@LOFskewness <- skewness(DMwR::lofactor((subclassobject@data)@x, k=klof))
 
   return(subclassobject)
 
@@ -119,10 +122,34 @@ prc <- function(classname, dataobject, predictor="knn"){
 
 
 setMethod("show", signature(object = "BaseClass"), function(object){
-  str(object)
-} )
+  cat("# OBJECT:", "\n")
+  cat("# class:", class(object), "\n")
+  cat("# call history:", object@callhistory, "\n")
+  cat("\n")
+  cat("# COMPUTATIONS:", "\n")
+  cat("# misclassification error:", round(object@classificationerror, 2), "\n")
+  cat("# hopkins statistic, clustering tendency:", round(object@hopkinsstatistic, 2), "\n")
+  cat("# skewness of LOF scores, outlier tendency:", round(object@LOFskewness, 2), "\n")
+  cat("\n")
+  cat("# DATA VALIDITY:", "\n")
+  cat("# variance in all variables:", object@data@variance, "\n")
+  cat("# only finite values:", object@data@finite, "\n")
+  cat("# complete observations:", object@data@completeobs, "\n")
+  cat("# class balance:", object@data@classbalance, "\n")
+  cat("# not multicollinear above .9:", object@data@corrbelowdotnine, "\n")
+  cat("# n to p ratio more than 2:", object@data@ntopratiotwoplus, "\n")
+  cat("# 3 or more predictors and more than 20 observations:", object@data@mindimensions, "\n")
+  } )
 
 # DEFAULT PREPROCESSORS AND PHASES ==========================
+
+# NO ACTION
+
+setpreprocessor("noaction", "identity(basedata)")
+
+# Low variance
+
+setpreprocessor("nearzerovar", "nzv(basedata)")
 
 # Imputation
 
@@ -134,36 +161,50 @@ setpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
 ## Scaling
 setpreprocessor("scale", "scale(basedata,center=FALSE)")
 setpreprocessor("centerscale", "scale(basedata, center=TRUE)")
-setpreprocessor("noscale", "identity(basedata)")
 setpreprocessor("minmaxscale", "data.frame(apply(basedata, 2, range01))")
 setpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
 
 # Outlier removal
 # setpreprocessor("lof", "lofcut(basedata)")
-setpreprocessor("orh", "orhcut(basedata)")
-setpreprocessor("nooutlierremove", "identity(basedata)")
+setpreprocessor("orhoutlier", "orhcut(basedata)")
 
 # Class imbalance
 
 setpreprocessor("oversample", "oversample(basedata)", mode="all")
-setpreprocessor("nosample", "identity(basedata)")
+
+# Smoothing
+
+setpreprocessor("lowesssmooth", "smoothlowess(basedata)")
 
 
 # Feature selection
 
-setpreprocessor("rfimp75", "rfimportance(basedata, .25)", mode="all")
-setpreprocessor("rfimp50", "rfimportance(basedata, .50)", mode="all")
-setpreprocessor("noselection", "identity(basedata)")
+setpreprocessor("rfselect75", "rfimportance(basedata, .25)", mode="all")
+setpreprocessor("rfselect50", "rfimportance(basedata, .50)", mode="all")
+
+# Class imbalance
+
+setpreprocessor("smotesample", "smotesample(basedata)", mode="all")
+setpreprocessor("oversample", "oversample(basedata)", mode="all")
+setpreprocessor("undersample", "undersample(basedata)", mode="all")
 
 # Phases
 
 imputation <- setphase("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
-scaling <- setphase("scaling", c("noscale", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
-outlier <- setphase("outlier", c("nooutlierremove", "orh"), FALSE)
-sampling <- setphase("sampling", c("nosample", "oversample"), FALSE)
-selection <- setphase("selection", c("noselection", "rfimp50", "rfimp75"), FALSE)
+variance <- setphase("variance", c("noaction", "nearzerovar"), FALSE)
+smoothing <- setphase("smoothing", c("noaction", "lowesssmooth"), FALSE)
+scaling <- setphase("scaling", c("noaction", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
+outlier <- setphase("outlier", c("noaction", "orhoutlier"), FALSE)
+sampling <- setphase("imbalance", c("noaction", "oversample", "undersample", "smotesample"), FALSE)
+selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FALSE)
+
 
 ### BASETEST ==========
+
+getphases <- function() {
+  temp <- as.list(ls())
+  out <- lapply(temp, function(x) class(eval(as.name(x)))=="PhaseClass")
+  }
 
 getpreprocessors <- function() {names(getClass("BaseClass")@subclasses)}
 

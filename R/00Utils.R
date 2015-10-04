@@ -7,13 +7,13 @@ NULL
 #' @importFrom methods setClass setGeneric setMethod
 NULL
 
-#' @import kernlab
-NULL
-
 #' @import arules
 NULL
 
 #' @import caret
+NULL
+
+#' @import C50
 NULL
 
 ## UTILS
@@ -51,22 +51,50 @@ x <- x[-orh_obs,]
 
 oversample <- function(dataobject){
 
-    freq <- table(dataobject@y)
-    freq <- as.integer(freq) # number of observations in each factor level
-    freqcum <- cumsum(freq) # start of each factor level in sequence of observations
-    freqorder <- order(freq) # smallest factor level first
-    seqend <- freqcum[freqorder[1]] # end of smallest factor level in sequence of observations
-    seqbegin <- seqend - freq[freqorder[1]] # end minus length of smallest factor level
-    samplesize <- freq[freqorder[2]]-freq[freqorder[1]] # different in size: smallest and second smallest
-    extrasample <- sample(seqbegin:seqend, samplesize, replace=TRUE)
+    data <- data.frame(dataobject@x, y=dataobject@y)
 
-    newx <- data.frame(rbind(dataobject@x, dataobject@x[extrasample,]))
-    newy <- factor(c(as.character(dataobject@y), as.character(dataobject@y[extrasample])))
+    if (nlevels(data$y) > 2) {stop("Oversampling can only be applied to binary class.")}
 
-    dataobject@x <- newx
-    dataobject@y <- newy
-    return(dataobject)
+    freq <- table(data$y)
+    temp <- order(freq)
+    nsample <- freq[temp[2]]-freq[temp[1]]
+    indexes <- which(data$y==names(freq)[temp[1]])
+    tempsample <- sample(indexes, nsample, replace=TRUE)
+    newdata <- initializedataclassobject(data.frame(rbind(data, data[tempsample,])))
+    return(newdata)
 }
+
+undersample <- function(dataobject){
+
+  data <- data.frame(dataobject@x, y=dataobject@y)
+
+  if (nlevels(data$y) > 2) {stop("Undersampling can only be applied to binary class.")}
+
+  freq <- table(data$y)
+  temp <- order(freq)
+  nsample <- freq[temp[1]]
+  indexes <- which(data$y==names(freq)[temp[2]])
+  indexes2 <- which(data$y==names(freq)[temp[1]])
+  tempsample <- sample(indexes, nsample)
+  finalsample <- c(indexes2, tempsample)
+  newdata <- initializedataclassobject(data[finalsample,])
+  return(newdata)
+}
+
+smotesample <- function(dataobject){
+  temp <- data.frame(dataobject@x, y=dataobject@y)
+
+  if (nlevels(temp$y) > 2) {stop("SMOTE can only be applied to binary class.")}
+
+  temp1 <- as.numeric(table(temp$y))
+  temp2 <- order(temp1)
+  temp3 <- temp1[temp2[2]]/temp1[temp2[1]]
+  temp4 <- temp1[temp2[2]]/(temp1[temp2[2]]-temp1[temp2[1]])
+  newData <- DMwR::SMOTE(y ~ ., temp, perc.over = 100*temp3, perc.under=100*temp4)
+  dataobject <- initializedataclassobject(newData)
+}
+
+
 
 rfimputefunc <- function(dataobject){
   if (any(is.na(dataobject@x))){
@@ -93,6 +121,20 @@ rfimportance <- function(dataobject, qt){
   return(dataobject)
 }
 
-globalVariables(c("result","combpredict"))
+nzv <- function(x)
+{
+  temp <- caret::nearZeroVar(x)
+  if (length(temp) !=0) {
+    x <- x[,-temp]}
+  return(x)
+}
+
+smoothlowess <- function(y){
+  result <-data.frame(round(apply(y, 2, function(y) lowess(y[order(y)], f=1/2)[[2]][match(y, y[order(y)])]),2))
+}
+
+
+
+globalVariables(c("result","combpredict", "predictor", "skewness"))
 
 #testthat::expect_equal(testpreprocessors(), "Exit status: OK: Stable computation of misclassification errors expected.")

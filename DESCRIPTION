@@ -19,7 +19,7 @@ Imports:
     arules,
     methods,
     C50,
-    kernlab
+    clustertend
 LazyData: TRUE
 URL: http://github.com/mvattulainen/preprocomb
 BugReports: http://github.com/mvattulainen/preprocomb/issues
@@ -29,7 +29,9 @@ Collate:
     '02PhaseClass.R'
     '03BaseClass.R'
     '04GridClass.R'
-    '05PredictionControl.R'
-    '06AnalysisClass.R'
+    '05PredictionControlClass.R'
+    '06PreProCombClass.R'
+    '07AnalysisClass.R'
 Suggests:
-    testthat
+    testthat,
+    kernlab

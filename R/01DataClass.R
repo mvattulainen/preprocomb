@@ -29,12 +29,9 @@ validatedataclassobject <- function(dataclassobject){
   dataclassobject@mindimensions <- temp6
 
   return(dataclassobject)
-}
 
-settoinvalid <- function(dataclassobject){
-  dataclassobject@isvalid <- FALSE
-  return(dataclassobject)
-}
+  }
+
 
 initializedataclassobject <- function(data){
 

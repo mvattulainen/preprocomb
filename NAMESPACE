@@ -2,6 +2,7 @@
 
 export(preprocomb)
 export(setgrid)
+import(C50)
 import(arules)
 import(caret)
 importFrom(methods,setClass)
