@@ -12,7 +12,9 @@ setgrid(phases, data)
 \item{data}{(data frame)}
 }
 \description{
-setgrid creates the combinations as a grid and computes the transformed data for each combination (row of grid)
+setgrid takes the preprocessing phases, preprocessors and creates the combinations of them as a grid.
+It then computes and stores the transformed data set for each combination.
+setgrid initialized a GridClass object.
 }
 \examples{
 ## grid <- setgrid(phases=c("outlier", "selection"), data=iris)

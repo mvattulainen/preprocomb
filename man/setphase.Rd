@@ -13,8 +13,12 @@ setphase(phasename, preprocessor, preimpute)
 
 \item{preimpute}{(logical) whether phase is executed before missing value imputation}
 }
+\value{
+a PhaseClass object
+}
 \description{
-setphase is a constructor function for initializing a PhaseClass object.
+setphase is a constructor function for defining a phase.
+setphases initializes a PhaseClass object.
 }
 \examples{
 ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)

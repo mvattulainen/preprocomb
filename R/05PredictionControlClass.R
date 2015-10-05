@@ -101,7 +101,7 @@ combpredict <- function(predictioncontrol, nholdout, search){
 }
 
 
-getinteractiveprediction <- function(intrain, intest){
+getinteractiveprediction <- function(intrain, intest, predictor){
   fitControl <- caret::trainControl(method = "boot", repeats=2)
   model <- caret::train(y ~., data=intrain, method=predictor, trControl = fitControl)
   prediction <- as.data.frame(predict(model, newdata=intest))
@@ -123,7 +123,7 @@ subclassprediction <- function(object, predictor, nholdout){
   intrain <- data[training,]
   intest <- data[-training,]
 
-  con[i] <- getinteractiveprediction(intrain, intest)
+  con[i] <- getinteractiveprediction(intrain, intest, predictor)
 
   }
 

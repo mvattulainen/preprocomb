@@ -11,18 +11,21 @@ setpreprocessor(classname, operation, mode = "numeric")
 
 \item{operation}{(expression as character string)}
 
-\item{mode}{(character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with slots x (numeeric variables) and y (factor of class labels)}
+\item{mode}{(character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with S4 slots x (numeric variables) and y (factor of class labels)}
+}
+\value{
+NULL definition of S4 class derived from BaseClass and corresponding transformdata-method
 }
 \description{
-setpreprocessor is a helper function used to define sub classes of BaseClass.
-Specifically, sub classes include the operation to be executed to preprocess data.
+setpreprocessor is a constructor function for defining a preprocessor. The main
+argument is the operation that is executed to transform the data such as "na.omit(basedata)"
+for removing rows that have missing values. An operation can process either only the numeric
+columns or also the class label column.
 }
 \details{
-If operation deletes rows in numeric data such as outliers, the corresponding class
-labels are deleted automatically.
-
-If operation uses both numeric columns and class labels, the defined operation must
-return both.
+If an operation deletes rows from numeric columns, the corresponding class
+labels are deleted automatically. If an operation uses both numeric columns
+and class labels, the defined operation must return both.
 }
 \examples{
 ## Set of examples using only numeric variables and no class labels

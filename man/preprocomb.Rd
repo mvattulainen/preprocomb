@@ -4,25 +4,33 @@
 \alias{preprocomb}
 \title{preprocomb}
 \usage{
-preprocomb(predictors, grid, nholdout = 1, search = "exhaustive")
+preprocomb(predictors, grid, nholdout = 2, search = "exhaustive")
 }
 \arguments{
-\item{predictors}{(character) vector of predictors (names of models as defined in package caret)}
+\item{predictors}{(character) vector of predictors (names of models as defined in package caret), there must be an odd number of models}
 
-\item{grid}{(GridClass) object}
+\item{grid}{(GridClass) object representing the grid of combinations}
 
-\item{nholdout}{(integer) number of holdout rounds, defaults to 1}
+\item{nholdout}{(integer) number of holdout rounds, must be two or more, defaults to 2}
 
 \item{search}{(character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent}
 }
 \description{
-preprocomb outputs the analysis of preprocessing combinations
+preprocomb the function of programmatic mode. It executes the computation of
+misclassification errors, hopkins statistic and ORH outlier scores. The result
+PreProCombClass object is used either to access its slots or to plot it with
+preproplot()
 }
 \examples{
 ## modifiediris <- droplevels(iris[-c(1:60),])
-## grid <- setgrid(phases=c("outlier", "scaling", "sampling"), data=modifiediris)
-## result <- preprocomb(predictors=c("svmRadial"), grid=grid, nholdout=2, search="grid")
-## result@all
-## result@rules
+## grid <- setgrid(phases=c("outlier", "scaling"), data=modifiediris)
+## result <- preprocomb(predictors=c("svmRadial"), grid=grid, nholdout=2, search="exhaustive")
+## result@allce
+## result@allclustering
+## result@alloutliers
+##
+## grid1 <- setgrid(phases=c("outlier", "smoothing", "scaling", "selection", "sampling"), data=modifiediris)
+## result1 <- preprocomb(predictors=c("knn", "rf", "svmRadial"), grid=grid1, nholdout=2, search="grid")
+## preprotree(result1)
 }
 

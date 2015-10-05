@@ -7,14 +7,15 @@ setClass("PhaseClass", representation(objectname="character", preprotransformati
 
 #' setphase
 #'
-#' setphase is a constructor function for initializing a PhaseClass object.
+#' setphase is a constructor function for defining a phase.
+#' setphases initializes a PhaseClass object.
 #'
 #' @param phasename (character) name of the phase
 #' @param preprocessor (character) vector of preprocessors (see ?setpreprocessor) belonging to the phase
 #' @param preimpute (logical) whether phase is executed before missing value imputation
+#' @return a PhaseClass object
 #' @examples
 #' ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
-
 
 setphase <- function(phasename, preprocessor, preimpute){
 

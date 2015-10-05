@@ -11,19 +11,19 @@ setGeneric("transformdata", function(object, dataobject) {
 
 #' setpreprocessor
 #'
-#' setpreprocessor is a helper function used to define sub classes of BaseClass.
-#' Specifically, sub classes include the operation to be executed to preprocess data.
+#' setpreprocessor is a constructor function for defining a preprocessor. The main
+#' argument is the operation that is executed to transform the data such as "na.omit(basedata)"
+#' for removing rows that have missing values. An operation can process either only the numeric
+#' columns or also the class label column.
 #'
-#' If operation deletes rows in numeric data such as outliers, the corresponding class
-#' labels are deleted automatically.
-#'
-#' If operation uses both numeric columns and class labels, the defined operation must
-#' return both.
-#'
+#' If an operation deletes rows from numeric columns, the corresponding class
+#' labels are deleted automatically. If an operation uses both numeric columns
+#' and class labels, the defined operation must return both.
 #'
 #' @param classname (character)
 #' @param operation (expression as character string)
-#' @param mode (character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with slots x (numeeric variables) and y (factor of class labels)
+#' @param mode (character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with S4 slots x (numeric variables) and y (factor of class labels)
+#' @return NULL definition of S4 class derived from BaseClass and corresponding transformdata-method
 #' @examples
 #' ## Set of examples using only numeric variables and no class labels
 #' ## setpreprocessor("naomit", "na.omit(basedata)")
@@ -86,6 +86,21 @@ prepro <- function(classname, dataobject, validate=FALSE){
 
 }
 
+#' prc
+#'
+#' prc is the function used for interactive mode
+#
+#' @param classname (character) name of preprocessor
+#' @param dataobject (sub class object/ data frame/ DataClass object)
+#' @param predictor (character) Caret model name, note: the corresponding library must be installed and attached before, defaults to "knn"
+#' @param nholdout (integer) number of holdout rounds used in computation of misclassification errors, must be two or more, defaults to two
+#' @param nsharehopkins (integer) denominator for sample size for hopkins statistics, defauls to 3 meaning 33 percent of sample size is used
+#' @param klof (integer) number of data points used for neighborhood in LOF algorithm, defaults to 5
+#' @examples
+#' ## a <- prc("scale", iris)
+#' ## b <- prc("rfselect75", a)
+#' ## d <- prc("scale", iris, "rf", 20, 2, 10)
+#' @export
 
 prc <- function(classname, dataobject, predictor="knn", nholdout=2, nsharehopkins=3, klof=5){
 
@@ -114,12 +129,11 @@ prc <- function(classname, dataobject, predictor="knn", nholdout=2, nsharehopkin
 
   subclassobject@hopkinsstatistic <- unname(unlist(clustertend::hopkins((subclassobject@data)@x, n=as.integer(nrow((subclassobject@data)@x)/nsharehopkins)   )))
 
-  subclassobject@LOFskewness <- skewness(DMwR::lofactor((subclassobject@data)@x, k=klof))
+  subclassobject@LOFskewness <- e1071::skewness(DMwR::lofactor((subclassobject@data)@x, k=klof))
 
   return(subclassobject)
 
 }
-
 
 setMethod("show", signature(object = "BaseClass"), function(object){
   cat("# OBJECT:", "\n")
@@ -131,7 +145,7 @@ setMethod("show", signature(object = "BaseClass"), function(object){
   cat("# hopkins statistic, clustering tendency:", round(object@hopkinsstatistic, 2), "\n")
   cat("# skewness of LOF scores, outlier tendency:", round(object@LOFskewness, 2), "\n")
   cat("\n")
-  cat("# DATA VALIDITY:", "\n")
+  cat("# FITNESS FOR MODEL FITTING:", "\n")
   cat("# variance in all variables:", object@data@variance, "\n")
   cat("# only finite values:", object@data@finite, "\n")
   cat("# complete observations:", object@data@completeobs, "\n")
@@ -201,12 +215,19 @@ selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FA
 
 ### BASETEST ==========
 
-getphases <- function() {
-  temp <- as.list(ls())
-  out <- lapply(temp, function(x) class(eval(as.name(x)))=="PhaseClass")
-  }
+#' getpreprocessors
+#'
+#' gets the preprocessors, that is sub classes derived from BaseClass
+#' @export
 
 getpreprocessors <- function() {names(getClass("BaseClass")@subclasses)}
+
+#' testpreprocessors
+#'
+#' run a test for preprocessors
+#' @param preprocessors (character) vector of preprocessors, by default gets all preprocessors with getpreprocessors()
+#' @param data (data frame) to be tested against, defaults to random data frame without missing values
+#' @export
 
 testpreprocessors <- function(preprocessors=NULL, data=NULL){
   if (is.null(preprocessors)) {preprocessors <- getpreprocessors() }

@@ -3,32 +3,33 @@ NULL
 
 # setOldClass("C5.0")
 
-#' PreProCombClass
-#'
-#' PreProCombClass represents the analysis of preprocessing combinations
-#' @slot best (data frame) best (that is, lowest misclassification error) combination
-#' @slot all (data frame) all preprocessing combinations and respective misclassification errors
-#' @slot rules assosiation rules for "low" (that is, lowest 10 percent) misclassification error
-
 setClass("PreProCombClass", representation(rawall="data.frame", rawcat="data.frame", allce="data.frame", bestce="data.frame", allclustering="data.frame", bestclustering="data.frame", alloutliers="data.frame"))
 
 #' preprocomb
 #'
-#' preprocomb outputs the analysis of preprocessing combinations
+#' preprocomb the function of programmatic mode. It executes the computation of
+#' misclassification errors, hopkins statistic and ORH outlier scores. The result
+#' PreProCombClass object is used either to access its slots or to plot it with
+#' preproplot()
 #
-#' @param predictors (character) vector of predictors (names of models as defined in package caret)
-#' @param grid (GridClass) object
-#' @param nholdout (integer) number of holdout rounds, defaults to 1
+#' @param predictors (character) vector of predictors (names of models as defined in package caret), there must be an odd number of models
+#' @param grid (GridClass) object representing the grid of combinations
+#' @param nholdout (integer) number of holdout rounds, must be two or more, defaults to 2
 #' @param search (character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent
 #' @examples
 #' ## modifiediris <- droplevels(iris[-c(1:60),])
-#' ## grid <- setgrid(phases=c("outlier", "scaling", "sampling"), data=modifiediris)
-#' ## result <- preprocomb(predictors=c("svmRadial"), grid=grid, nholdout=2, search="grid")
-#' ## result@@all
-#' ## result@@rules
+#' ## grid <- setgrid(phases=c("outlier", "scaling"), data=modifiediris)
+#' ## result <- preprocomb(predictors=c("svmRadial"), grid=grid, nholdout=2, search="exhaustive")
+#' ## result@@allce
+#' ## result@@allclustering
+#' ## result@@alloutliers
+#' ##
+#' ## grid1 <- setgrid(phases=c("outlier", "smoothing", "scaling", "selection", "sampling"), data=modifiediris)
+#' ## result1 <- preprocomb(predictors=c("knn", "rf", "svmRadial"), grid=grid1, nholdout=2, search="grid")
+#' ## preprotree(result1)
 #' @export
 
-preprocomb <- function(predictors, grid, nholdout=1, search="exhaustive"){
+preprocomb <- function(predictors, grid, nholdout=2, search="exhaustive"){
 
   predictioncontrolclassobject <- initializepredictioncontrolclassobject(predictors, grid)
 
@@ -65,8 +66,8 @@ preprocomb <- function(predictors, grid, nholdout=1, search="exhaustive"){
   # rawcat
 
   tempout <- preprocombclassobject@rawall
-  cutpoint <- quantile(tempout[,(ncol(tempout)-2)], .10)
-  tempout$target <- cut(tempout[,ncol(tempout)], breaks=c(-Inf, cutpoint, Inf), labels=c("low", "high"))
+  cutpoint <- quantile(tempout[,voteposition], .20)
+  tempout$target <- cut(tempout[,voteposition], breaks=c(-Inf, cutpoint, Inf), labels=c("low", "high"))
   tempout <- tempout[, -c((nphase+1):(ncol(tempout)-1))]
   preprocombclassobject@rawcat <- tempout
 

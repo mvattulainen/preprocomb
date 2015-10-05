@@ -7,39 +7,35 @@ NULL
 #' @importFrom methods setClass setGeneric setMethod
 NULL
 
-#' @import arules
-NULL
-
 #' @import caret
 NULL
 
-#' @import C50
-NULL
-
 ## UTILS
+
+# Mode for VOTE
 
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]}
 
+# Min-max scaling
+
 range01 <- function(y){
   newrange <- (y-min(y))/(max(y)-min(y))
 }
+
+# Mean imputation
 
 meanrep <- function(x){
   x[is.na(x)] =mean(x, na.rm=TRUE)
   x
 }
 
+# Test for even/odd
+
 is.odd <- function(x) x %% 2 != 0
 
-lofcut <- function(x){
-lof_score <- DMwR::lofactor(x, k=5)
-lof_score[is.finite(lof_score)==FALSE] <- 0 #dirty fix
-lof_cut <- quantile(lof_score, .95)
-lof_obs <- which(lof_score > lof_cut)
-x <- x[-lof_obs,]
-}
+# outlier removal
 
 orhcut <- function(x){
 orh_score <- suppressMessages(DMwR::outliers.ranking(x))
@@ -48,6 +44,8 @@ orh_cut <- quantile(orh_rank, .95)
 orh_obs <- which(orh_rank >= orh_cut)
 x <- x[-orh_obs,]
 }
+
+# oversampling
 
 oversample <- function(dataobject){
 
@@ -63,6 +61,8 @@ oversample <- function(dataobject){
     newdata <- initializedataclassobject(data.frame(rbind(data, data[tempsample,])))
     return(newdata)
 }
+
+# undersampling
 
 undersample <- function(dataobject){
 
@@ -81,6 +81,8 @@ undersample <- function(dataobject){
   return(newdata)
 }
 
+# smote sampling
+
 smotesample <- function(dataobject){
   temp <- data.frame(dataobject@x, y=dataobject@y)
 
@@ -94,7 +96,7 @@ smotesample <- function(dataobject){
   dataobject <- initializedataclassobject(newData)
 }
 
-
+# random forest imputation
 
 rfimputefunc <- function(dataobject){
   if (any(is.na(dataobject@x))){
@@ -105,6 +107,8 @@ rfimputefunc <- function(dataobject){
   return(dataobject)
 }
 
+# knnimputation
+
 knnimputefunc <- function(x){
   if (any(is.na(x))){
     x <- DMwR::knnImputation(x, k=5)
@@ -112,6 +116,7 @@ knnimputefunc <- function(x){
   return(x)
 }
 
+# random forest importance
 
 rfimportance <- function(dataobject, qt){
   rf.imp <- randomForest::randomForest(dataobject@y ~ ., data=dataobject@x, ntree=100, keep.forest=FALSE, importance=TRUE)
@@ -121,6 +126,8 @@ rfimportance <- function(dataobject, qt){
   return(dataobject)
 }
 
+# near zero variance
+
 nzv <- function(x)
 {
   temp <- caret::nearZeroVar(x)
@@ -129,12 +136,11 @@ nzv <- function(x)
   return(x)
 }
 
+# smoothing with lowess
+
 smoothlowess <- function(y){
   result <-data.frame(round(apply(y, 2, function(y) lowess(y[order(y)], f=1/2)[[2]][match(y, y[order(y)])]),2))
 }
 
-
-
 globalVariables(c("result","combpredict", "predictor", "skewness"))
 
-#testthat::expect_equal(testpreprocessors(), "Exit status: OK: Stable computation of misclassification errors expected.")

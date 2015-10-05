@@ -1,14 +1,17 @@
 Package: preprocomb
 Type: Package
-Title: Tools for Optimizing Classification Accuracy by Search from Preprocessing
-    Combinations
+Title: Tools for Preprocessing Combinations
 Version: 0.1
-Date: 2015-09-11
+Date: 2015-10-05
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
-Description: Preprocessing transformations are often interdependent. Preprocomb
-    provides a framawork for defining, combining and analysing preprocessing
-    performance.
+Description: Data quality issues and corresponding preprocessing transformations
+    are often interdependent. Preprocomb provides a framework for combining and
+    analysing single preprocessors for predictive classification, clustering and
+    outlier detection. The framework supports using of domain-specific preprocessors
+    and preproccessing phases such as missing value imputation, low variance
+    removal, noise removal, outlier removal, scaling, class imbalance corrections
+    and selection of relevant features.
 License: GPL-2
 Imports:
     DMwR,
@@ -16,10 +19,10 @@ Imports:
     Metrics,
     caret,
     caretEnsemble,
-    arules,
     methods,
     C50,
-    clustertend
+    clustertend,
+    e1071
 LazyData: TRUE
 URL: http://github.com/mvattulainen/preprocomb
 BugReports: http://github.com/mvattulainen/preprocomb/issues
@@ -31,7 +34,5 @@ Collate:
     '04GridClass.R'
     '05PredictionControlClass.R'
     '06PreProCombClass.R'
-    '07AnalysisClass.R'
 Suggests:
-    testthat,
     kernlab
