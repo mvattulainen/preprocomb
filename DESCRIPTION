@@ -1,7 +1,7 @@
 Package: preprocomb
 Type: Package
 Title: Tools for Preprocessing Combinations
-Version: 0.1
+Version: 0.1.0
 Date: 2015-10-06
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
