@@ -2,16 +2,15 @@ Package: preprocomb
 Type: Package
 Title: Tools for Preprocessing Combinations
 Version: 0.1
-Date: 2015-10-05
+Date: 2015-10-06
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
-Description: Data quality issues and corresponding preprocessing transformations
-    are often interdependent. Preprocomb provides a framework for combining and
-    analysing single preprocessors for predictive classification, clustering and
-    outlier detection. The framework supports using of domain-specific preprocessors
-    and preproccessing phases such as missing value imputation, low variance
-    removal, noise removal, outlier removal, scaling, class imbalance corrections
-    and selection of relevant features.
+Description: Preprocessing transformations are often interdependent. Preprocomb
+    provides an S4 framework for combining single preprocessors for predictive
+    classification, clustering and outlier detection. The framework supports user-
+    defined domain-specific preprocessors and preproccessing phases such as missing
+    value imputation, low variance removal, noise removal, outlier removal, scaling,
+    class imbalance corrections and selection of relevant features.
 License: GPL-2
 Imports:
     DMwR,
@@ -20,7 +19,6 @@ Imports:
     caret,
     caretEnsemble,
     methods,
-    C50,
     clustertend,
     e1071
 LazyData: TRUE

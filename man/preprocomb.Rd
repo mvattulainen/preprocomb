@@ -29,8 +29,9 @@ preproplot()
 ## result@allclustering
 ## result@alloutliers
 ##
-## grid1 <- setgrid(phases=c("outlier", "smoothing", "scaling", "selection", "sampling"), data=modifiediris)
-## result1 <- preprocomb(predictors=c("knn", "rf", "svmRadial"), grid=grid1, nholdout=2, search="grid")
-## preprotree(result1)
+## newphases <- c("outlier", "smoothing", "scaling", "selection", "sampling")
+## newpredictors <- c("knn", "rf", "svmRadial")
+## grid1 <- setgrid(phases=newphases, data=modifiediris)
+## result1 <- preprocomb(predictors=newpredictors, grid=grid1, nholdout=2, search="grid")
 }
 
