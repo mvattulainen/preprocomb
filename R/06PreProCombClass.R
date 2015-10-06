@@ -8,14 +8,14 @@ setClass("PreProCombClass", representation(rawall="data.frame", rawcat="data.fra
 #' preprocomb
 #'
 #' preprocomb the function of programmatic mode. It executes the computation of
-#' misclassification errors, hopkins statistic and ORH outlier scores. The result
-#' PreProCombClass object is used either to access its slots or to plot it with
-#' preproplot()
+#' misclassification errors, hopkins statistic and ORH outlier scores.
 #
 #' @param predictors (character) vector of predictors (names of models as defined in package caret), there must be an odd number of models
 #' @param grid (GridClass) object representing the grid of combinations
-#' @param nholdout (integer) number of holdout rounds, must be two or more, defaults to 2
+#' @param nholdout (integer) number of holdout rounds, must be two or more, defaults to two
 #' @param search (character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent
+#' @return a PreProCombClass object
+#' @details caret messages will be displayed during processing
 #' @examples
 #' ## modifiediris <- droplevels(iris[-c(1:60),])
 #' ## grid <- setgrid(phases=c("outlier", "scaling"), data=modifiediris)
@@ -23,6 +23,8 @@ setClass("PreProCombClass", representation(rawall="data.frame", rawcat="data.fra
 #' ## result@@allce
 #' ## result@@allclustering
 #' ## result@@alloutliers
+#' ## result@@rawall
+#' ## result@@rawcat
 #' ##
 #' ## newphases <- c("outlier", "smoothing", "scaling", "selection", "sampling")
 #' ## newpredictors <- c("knn", "rf", "svmRadial")

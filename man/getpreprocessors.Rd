@@ -7,6 +7,6 @@
 getpreprocessors()
 }
 \description{
-gets the preprocessors, that is sub classes derived from BaseClass
+gets the preprocessor objects.
 }
 

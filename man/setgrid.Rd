@@ -11,6 +11,9 @@ setgrid(phases, data)
 
 \item{data}{(data frame)}
 }
+\value{
+a GridClass object
+}
 \description{
 setgrid takes the preprocessing phases, preprocessors and creates the combinations of them as a grid.
 It then computes and stores the transformed data set for each combination.

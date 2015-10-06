@@ -16,6 +16,7 @@ setClass("PhaseClass", representation(objectname="character", preprotransformati
 #' @return a PhaseClass object
 #' @examples
 #' ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
+#' @export
 
 setphase <- function(phasename, preprocessor, preimpute){
 

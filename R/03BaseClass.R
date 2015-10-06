@@ -33,7 +33,7 @@ setGeneric("transformdata", function(object, dataobject) {
 #' ##
 #' ## An example using also class labels and a supporting function
 #' ## setpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
-
+#' @export
 
 setpreprocessor <- function(classname, operation, mode="numeric"){
 
@@ -88,14 +88,17 @@ prepro <- function(classname, dataobject, validate=FALSE){
 
 #' prc
 #'
-#' prc is the function used for interactive mode
-#
+#' prc is the function used for interactive mode. It takes data, transforms it according to the given
+#' preprocessor and computes statistics on the transformed data. The main use case is the chaining of
+#' the preprocessors as show in the examples below.
+#'
 #' @param classname (character) name of preprocessor
 #' @param dataobject (sub class object/ data frame/ DataClass object)
-#' @param predictor (character) Caret model name, note: the corresponding library must be installed and attached before, defaults to "knn"
+#' @param predictor (character) caret model name, note: the required model library must be attached, defaults to "knn"
 #' @param nholdout (integer) number of holdout rounds used in computation of misclassification errors, must be two or more, defaults to two
-#' @param nsharehopkins (integer) denominator for sample size for hopkins statistics, defauls to 3 meaning 33 percent of sample size is used
+#' @param nsharehopkins (integer) denominator for sample size for hopkins statistics, defauls to three meaning 33 percent of sample size is used
 #' @param klof (integer) number of data points used for neighborhood in LOF algorithm, defaults to 5
+#' @return a sub class (of BaseClass) object
 #' @examples
 #' ## a <- prc("scale", iris)
 #' ## b <- prc("rfselect75", a)
@@ -217,7 +220,7 @@ selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FA
 
 #' getpreprocessors
 #'
-#' gets the preprocessors, that is sub classes derived from BaseClass
+#' gets the preprocessor objects.
 #' @export
 
 getpreprocessors <- function() {names(getClass("BaseClass")@subclasses)}

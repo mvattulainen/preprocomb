@@ -12,16 +12,21 @@ prc(classname, dataobject, predictor = "knn", nholdout = 2,
 
 \item{dataobject}{(sub class object/ data frame/ DataClass object)}
 
-\item{predictor}{(character) Caret model name, note: the corresponding library must be installed and attached before, defaults to "knn"}
+\item{predictor}{(character) caret model name, note: the required model library must be attached, defaults to "knn"}
 
 \item{nholdout}{(integer) number of holdout rounds used in computation of misclassification errors, must be two or more, defaults to two}
 
-\item{nsharehopkins}{(integer) denominator for sample size for hopkins statistics, defauls to 3 meaning 33 percent of sample size is used}
+\item{nsharehopkins}{(integer) denominator for sample size for hopkins statistics, defauls to three meaning 33 percent of sample size is used}
 
 \item{klof}{(integer) number of data points used for neighborhood in LOF algorithm, defaults to 5}
 }
+\value{
+a sub class (of BaseClass) object
+}
 \description{
-prc is the function used for interactive mode
+prc is the function used for interactive mode. It takes data, transforms it according to the given
+preprocessor and computes statistics on the transformed data. The main use case is the chaining of
+the preprocessors as show in the examples below.
 }
 \examples{
 ## a <- prc("scale", iris)

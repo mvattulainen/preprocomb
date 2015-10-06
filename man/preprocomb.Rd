@@ -11,15 +11,19 @@ preprocomb(predictors, grid, nholdout = 2, search = "exhaustive")
 
 \item{grid}{(GridClass) object representing the grid of combinations}
 
-\item{nholdout}{(integer) number of holdout rounds, must be two or more, defaults to 2}
+\item{nholdout}{(integer) number of holdout rounds, must be two or more, defaults to two}
 
 \item{search}{(character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent}
 }
+\value{
+a PreProCombClass object
+}
 \description{
 preprocomb the function of programmatic mode. It executes the computation of
-misclassification errors, hopkins statistic and ORH outlier scores. The result
-PreProCombClass object is used either to access its slots or to plot it with
-preproplot()
+misclassification errors, hopkins statistic and ORH outlier scores.
+}
+\details{
+caret messages will be displayed during processing
 }
 \examples{
 ## modifiediris <- droplevels(iris[-c(1:60),])
@@ -28,6 +32,8 @@ preproplot()
 ## result@allce
 ## result@allclustering
 ## result@alloutliers
+## result@rawall
+## result@rawcat
 ##
 ## newphases <- c("outlier", "smoothing", "scaling", "selection", "sampling")
 ## newpredictors <- c("knn", "rf", "svmRadial")

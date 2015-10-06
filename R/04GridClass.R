@@ -32,6 +32,7 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
 #
 #' @param phases (character) vector of phases
 #' @param data (data frame)
+#' @return a GridClass object
 #' @examples
 #' ## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
 #' @export
