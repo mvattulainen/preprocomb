@@ -14,7 +14,7 @@ setpreprocessor(classname, operation, mode = "numeric")
 \item{mode}{(character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with S4 slots x (numeric variables) and y (factor of class labels)}
 }
 \value{
-NULL definition of S4 class derived from BaseClass and corresponding transformdata-method
+NULL definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
 }
 \description{
 setpreprocessor is a constructor function for defining a preprocessor. The main

@@ -26,7 +26,7 @@ setphase <- function(phasename, preprocessor, preimpute){
   if (class(preimpute)!="logical") {stop("Argument 'preimpute' must be a logical (TRUE/FALSE).")}
 
   listofpreprocessors <- as.list(preprocessor)
-  if (any(unlist(lapply(listofpreprocessors, function(x) extends(x, "BaseClass")))=="FALSE")) {
+  if (any(unlist(lapply(listofpreprocessors, function(x) extends(x, "PreprocessorClass")))=="FALSE")) {
     stop("All elements of argument 'preprocessor' must point to sub classes of BaseClass constructed with function 'addpreprocessor'.") }
 
   phaseclassobject <- new("PhaseClass", objectname=phasename, preimpute=preimpute)

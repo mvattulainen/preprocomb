@@ -3,7 +3,29 @@ NULL
 
 # SUBCLASSES =================================================
 
-setClass("BaseClass", representation(objectname="character", objectoperation="character", data="DataClass", classificationerror="numeric", hopkinsstatistic="numeric", LOFskewness="numeric", callhistory="character"))
+#' PreprocessorClass
+#'
+#' PreprocessorClass is an abstract class from which concrete preprocessor (sub) classes are inhereted.
+#' Inheritance is controlled by setpreprocessor() function.
+#'
+#' @slot objectname (character) object name
+#' @slot objectoperation (character) operation (expression as character string)
+#' @slot data (DataClass) object
+#' @slot classificationaccuracy (numeric) classification accuracy
+#' @slot hopkinsstatistic (numeric) clustering tendency
+#' @slot LOFskewness (numeric) skewness value of LOF scores
+#' @slot callhistory (character) vector of current and previous calls
+#' @export
+
+setClass("PreprocessorClass", representation(objectname="character", objectoperation="character", data="DataClass", classificationaccuracy="numeric", hopkinsstatistic="numeric", LOFskewness="numeric", callhistory="character"))
+
+#' transformdata
+#'
+#' transformdata is a generic function. Its methods are defined by setpreprocessor().
+#' The function intented for package internal use.
+#' @param object PreprocessorClass object
+#' @param dataobject DataClass or data frame object
+#' @export
 
 setGeneric("transformdata", function(object, dataobject) {
   standardGeneric("transformdata")
@@ -23,7 +45,7 @@ setGeneric("transformdata", function(object, dataobject) {
 #' @param classname (character)
 #' @param operation (expression as character string)
 #' @param mode (character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with S4 slots x (numeric variables) and y (factor of class labels)
-#' @return NULL definition of S4 class derived from BaseClass and corresponding transformdata-method
+#' @return NULL definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
 #' @examples
 #' ## Set of examples using only numeric variables and no class labels
 #' ## setpreprocessor("naomit", "na.omit(basedata)")
@@ -37,17 +59,19 @@ setGeneric("transformdata", function(object, dataobject) {
 
 setpreprocessor <- function(classname, operation, mode="numeric"){
 
-  setClass(classname, contains="BaseClass", prototype=prototype(objectname=classname, objectoperation=operation))
+  setClass(classname, contains="PreprocessorClass", where=topenv(parent.frame()), prototype=prototype(objectname=classname, objectoperation=operation))
 
-  setMethod("transformdata", signature(object = classname), function(object, dataobject) {
+  setMethod("transformdata", where=topenv(parent.frame()), signature(object = classname), function(object, dataobject) {
 
-    if (mode=="numeric") {functionexpression <- gsub("basedata", "dataobject@x", operation)}
-    if (mode=="all") {functionexpression <- gsub("basedata", "dataobject", operation)}
+    if (mode=="numeric") {replacer <- "dataobject@x"}
+    if (mode=="all") {replacer <- "dataobject"}
+
+    functionexpression <- gsub("basedata", replacer, operation)
 
     output <- eval(parse(text=functionexpression))
 
-    output_x <- output
-    if (mode=="all") {output_x <- output@x}
+    output_x <- output # DataClass object
+    if (mode=="all") {output_x <- output@x} # data frame
 
     rownames(output_x) <- seq(1,nrow(output_x),1)
 
@@ -72,9 +96,9 @@ prepro <- function(classname, dataobject, validate=FALSE){
 
   if (class(dataobject)=="data.frame") {transformeddata <- transformdata(subclassobject, initializedataclassobject(dataobject))}
 
-  if (is(dataobject, "BaseClass")==TRUE) {transformeddata <- transformdata(subclassobject, dataobject@data)}
+  if (is(dataobject, "PreprocessorClass")==TRUE) {transformeddata <- transformdata(subclassobject, dataobject@data)}
 
-  #else {stop("Argument 'dataobject' must be either a DataClass object or object inhereted from BaseClass")}
+  #else {stop("Argument 'dataobject' must be either a DataClass object or object inhereted from PreprocessorClass")}
 
   subclassobject@data <- transformeddata
 
@@ -88,24 +112,26 @@ prepro <- function(classname, dataobject, validate=FALSE){
 
 #' prc
 #'
-#' prc is the function used for interactive mode. It takes data, transforms it according to the given
-#' preprocessor and computes statistics on the transformed data. The main use case is the chaining of
+#' prc is the main function for interactive use. It takes data, transforms it according to the given
+#' preprocessor and computes statistics of the transformed data. The main use case is the chaining of
 #' the preprocessors as show in the examples below.
 #'
-#' @param classname (character) name of preprocessor
-#' @param dataobject (sub class object/ data frame/ DataClass object)
-#' @param predictor (character) caret model name, note: the required model library must be attached, defaults to "knn"
-#' @param nholdout (integer) number of holdout rounds used in computation of misclassification errors, must be two or more, defaults to two
-#' @param nsharehopkins (integer) denominator for sample size for hopkins statistics, defauls to three meaning 33 percent of sample size is used
-#' @param klof (integer) number of data points used for neighborhood in LOF algorithm, defaults to 5
-#' @return a sub class (of BaseClass) object
+#' @param classname (character) name of preprocessor (i.e. PreprocessorClass sub class as defined by setpreprocessor())
+#' @param dataobject (sub class/ data frame/ DataClass) object
+#' @param model (character) caret model name, note: the required model library must be attached, defaults to "knn"
+#' @param nholdout (integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to two
+#' @param nsharehopkins (integer) denominator for sample size for hopkins statistics, defauls to three  (n=nrow(data)/3)
+#' @param klof (integer) number of data points used for neighborhood in LOF algorithm, defaults to five
+#' @return object of PreprocessorClass sub class
 #' @examples
 #' ## a <- prc("scale", iris)
 #' ## b <- prc("rfselect75", a)
 #' ## d <- prc("scale", iris, "rf", 20, 2, 10)
 #' @export
 
-prc <- function(classname, dataobject, predictor="knn", nholdout=2, nsharehopkins=3, klof=5){
+prc <- function(classname, dataobject, model="knn", nholdout=2, nsharehopkins=3, klof=5){
+
+  predictor <- model
 
   subclassobject <- new(classname)
 
@@ -119,7 +145,7 @@ prc <- function(classname, dataobject, predictor="knn", nholdout=2, nsharehopkin
     subclassobject@callhistory <- subclassobject@objectname
     }
 
-  if (is(dataobject, "BaseClass")==TRUE) {
+  if (is(dataobject, "PreprocessorClass")==TRUE) {
     transformeddata <- transformdata(subclassobject, dataobject@data)
     subclassobject@callhistory <- c(dataobject@callhistory, subclassobject@objectname)
   }
@@ -128,7 +154,7 @@ prc <- function(classname, dataobject, predictor="knn", nholdout=2, nsharehopkin
 
   subclassobject@data <- validatedataclassobject(transformeddata)
 
-  subclassobject@classificationerror <- suppressWarnings(subclassprediction(subclassobject, predictor, nholdout))
+  subclassobject@classificationaccuracy <- suppressWarnings(subclassprediction(subclassobject, predictor, nholdout))
 
   subclassobject@hopkinsstatistic <- unname(unlist(clustertend::hopkins((subclassobject@data)@x, n=as.integer(nrow((subclassobject@data)@x)/nsharehopkins)   )))
 
@@ -138,13 +164,13 @@ prc <- function(classname, dataobject, predictor="knn", nholdout=2, nsharehopkin
 
 }
 
-setMethod("show", signature(object = "BaseClass"), function(object){
+setMethod("show", signature(object = "PreprocessorClass"), function(object){
   cat("# OBJECT:", "\n")
   cat("# class:", class(object), "\n")
   cat("# call history:", object@callhistory, "\n")
   cat("\n")
   cat("# COMPUTATIONS:", "\n")
-  cat("# misclassification error:", round(object@classificationerror, 2), "\n")
+  cat("# classification accuracy:", round(object@classificationaccuracy, 2), "\n")
   cat("# hopkins statistic, clustering tendency:", round(object@hopkinsstatistic, 2), "\n")
   cat("# skewness of LOF scores, outlier tendency:", round(object@LOFskewness, 2), "\n")
   cat("\n")
@@ -220,10 +246,11 @@ selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FA
 
 #' getpreprocessors
 #'
-#' gets the preprocessor objects.
+#' gets the available preprocessors, that is: PreprocessorClass (sub) classes.
+#' Shown preprocessors can be used by functions prc() and setphase().
 #' @export
 
-getpreprocessors <- function() {names(getClass("BaseClass")@subclasses)}
+getpreprocessors <- function() {names(getClass("PreprocessorClass")@subclasses)}
 
 #' testpreprocessors
 #'

@@ -4,28 +4,28 @@
 \alias{prc}
 \title{prc}
 \usage{
-prc(classname, dataobject, predictor = "knn", nholdout = 2,
-  nsharehopkins = 3, klof = 5)
+prc(classname, dataobject, model = "knn", nholdout = 2, nsharehopkins = 3,
+  klof = 5)
 }
 \arguments{
-\item{classname}{(character) name of preprocessor}
+\item{classname}{(character) name of preprocessor (i.e. PreprocessorClass sub class as defined by setpreprocessor())}
 
-\item{dataobject}{(sub class object/ data frame/ DataClass object)}
+\item{dataobject}{(sub class/ data frame/ DataClass) object}
 
-\item{predictor}{(character) caret model name, note: the required model library must be attached, defaults to "knn"}
+\item{model}{(character) caret model name, note: the required model library must be attached, defaults to "knn"}
 
-\item{nholdout}{(integer) number of holdout rounds used in computation of misclassification errors, must be two or more, defaults to two}
+\item{nholdout}{(integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to two}
 
-\item{nsharehopkins}{(integer) denominator for sample size for hopkins statistics, defauls to three meaning 33 percent of sample size is used}
+\item{nsharehopkins}{(integer) denominator for sample size for hopkins statistics, defauls to three  (n=nrow(data)/3)}
 
-\item{klof}{(integer) number of data points used for neighborhood in LOF algorithm, defaults to 5}
+\item{klof}{(integer) number of data points used for neighborhood in LOF algorithm, defaults to five}
 }
 \value{
-a sub class (of BaseClass) object
+object of PreprocessorClass sub class
 }
 \description{
-prc is the function used for interactive mode. It takes data, transforms it according to the given
-preprocessor and computes statistics on the transformed data. The main use case is the chaining of
+prc is the main function for interactive use. It takes data, transforms it according to the given
+preprocessor and computes statistics of the transformed data. The main use case is the chaining of
 the preprocessors as show in the examples below.
 }
 \examples{

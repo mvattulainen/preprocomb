@@ -31,7 +31,7 @@ getcombprediction <- function(dat1, predictors, fitControl){
   model_list <- caretEnsemble::caretList(y ~., data=intrain, methodList=predictors, trControl=fitControl)
   prediction <- as.data.frame(predict(model_list, newdata=intest))
   prediction$vote <- apply(prediction, 1, Mode)
-  output <- as.numeric(lapply(prediction, function(x) Metrics::ce(as.character(x), as.character(intest$y))))
+  output <- as.numeric(lapply(prediction, function(x) mean(as.character(x)==as.character(intest$y))))
 
 }
 
@@ -105,7 +105,7 @@ getinteractiveprediction <- function(intrain, intest, predictor){
   fitControl <- caret::trainControl(method = "boot", repeats=2)
   model <- caret::train(y ~., data=intrain, method=predictor, trControl = fitControl)
   prediction <- as.data.frame(predict(model, newdata=intest))
-  output <- Metrics::ce(as.character(prediction[,1]), as.character(intest$y))
+  output <- mean(as.character(prediction[,1])==as.character(intest$y))
 }
 
 

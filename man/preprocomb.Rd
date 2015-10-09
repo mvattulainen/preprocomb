@@ -4,10 +4,10 @@
 \alias{preprocomb}
 \title{preprocomb}
 \usage{
-preprocomb(predictors, grid, nholdout = 2, search = "exhaustive")
+preprocomb(models, grid, nholdout = 2, search = "exhaustive")
 }
 \arguments{
-\item{predictors}{(character) vector of predictors (names of models as defined in package caret), there must be an odd number of models}
+\item{models}{(character) vector of models (names of models as defined in package caret), there must be an odd number of models}
 
 \item{grid}{(GridClass) object representing the grid of combinations}
 
@@ -20,7 +20,8 @@ a PreProCombClass object
 }
 \description{
 preprocomb the function of programmatic mode. It executes the computation of
-misclassification errors, hopkins statistic and ORH outlier scores.
+classification accuracy, hopkins statistic and ORH outlier score. See also
+PreProCombClass.
 }
 \details{
 caret messages will be displayed during processing
@@ -28,16 +29,17 @@ caret messages will be displayed during processing
 \examples{
 ## modifiediris <- droplevels(iris[-c(1:60),])
 ## grid <- setgrid(phases=c("outlier", "scaling"), data=modifiediris)
-## result <- preprocomb(predictors=c("svmRadial"), grid=grid, nholdout=2, search="exhaustive")
-## result@allce
+## library(kernlab)
+## result <- preprocomb(models=c("svmRadial"), grid=grid, nholdout=2, search="exhaustive")
+## result@allclassification
 ## result@allclustering
 ## result@alloutliers
 ## result@rawall
-## result@rawcat
+## result@catclassification
 ##
 ## newphases <- c("outlier", "smoothing", "scaling", "selection", "sampling")
-## newpredictors <- c("knn", "rf", "svmRadial")
+## newmodels <- c("knn", "rf", "svmRadial")
 ## grid1 <- setgrid(phases=newphases, data=modifiediris)
-## result1 <- preprocomb(predictors=newpredictors, grid=grid1, nholdout=2, search="grid")
+## result1 <- preprocomb(models=newmodels, grid=grid1, nholdout=2, search="grid")
 }
 

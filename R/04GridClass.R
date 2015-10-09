@@ -22,13 +22,23 @@ reportexitstatus <- function(datalist){
 
 ## GRID
 
+#' GridClass
+#'
+#' GridClass is a container for preprocessor combinations and the corresponding preprocessed data sets.
+#' GridClass is an interface for extending the system.
+#' @slot grid (data frame) preprocessor combinations
+#' @slot data (list) DataClass objects
+#' @details Extensions can include approximate combinatorial optimization for finding near-best
+#' combinations faster.
+#' @export
+
 setClass("GridClass", representation(grid="data.frame", data="list"))
 
 #' setgrid
 #'
-#' setgrid takes the preprocessing phases, preprocessors and creates the combinations of them as a grid.
-#' It then computes and stores the transformed data set for each combination.
-#' setgrid initialized a GridClass object.
+#' setgrid takes the preprocessing phases, which contain preprocessors and creates
+#' the combinations of them as a grid. It then computes and stores the transformed
+#' data sets for each combination. setgrid initializes a GridClass object.
 #
 #' @param phases (character) vector of phases
 #' @param data (data frame)
