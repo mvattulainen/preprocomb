@@ -8,6 +8,9 @@
 PreproCombClass is a container for output of executing preprocomb function.
 It is an interface for extension of the system.
 }
+\details{
+Extensions can included analysis of catclassification by association rules or modelling
+}
 \section{Slots}{
 
 \describe{

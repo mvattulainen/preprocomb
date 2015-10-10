@@ -22,9 +22,9 @@ setClass("PreprocessorClass", representation(objectname="character", objectopera
 #' transformdata
 #'
 #' transformdata is a generic function. Its methods are defined by setpreprocessor().
-#' The function intented for package internal use.
-#' @param object PreprocessorClass object
-#' @param dataobject DataClass or data frame object
+#' The function is intented for package internal use.
+#' @param object (PreprocessorClass) object
+#' @param dataobject (DataClass/data frame) object
 #' @export
 
 setGeneric("transformdata", function(object, dataobject) {

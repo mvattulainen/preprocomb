@@ -14,13 +14,14 @@ NULL
 #' @slot allclustering (data frame) hopkins statistics values
 #' @slot bestclustering (data frame) best hopkins statistics combinations
 #' @slot alloutliers (data frame) ORH outlier score for 95 percent quantile value
+#' @details Extensions can included analysis of catclassification by association rules or modelling
 #' @export
 
 setClass("PreProCombClass", representation(rawall="data.frame", catclassification="data.frame", allclassification="data.frame", bestclassification="data.frame", allclustering="data.frame", bestclustering="data.frame", alloutliers="data.frame"))
 
 #' preprocomb
 #'
-#' preprocomb the function of programmatic mode. It executes the computation of
+#' preprocomb the main function of programmatic use. It executes the computation of
 #' classification accuracy, hopkins statistic and ORH outlier score. See also
 #' PreProCombClass.
 #

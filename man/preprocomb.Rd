@@ -19,7 +19,7 @@ preprocomb(models, grid, nholdout = 2, search = "exhaustive")
 a PreProCombClass object
 }
 \description{
-preprocomb the function of programmatic mode. It executes the computation of
+preprocomb the main function of programmatic use. It executes the computation of
 classification accuracy, hopkins statistic and ORH outlier score. See also
 PreProCombClass.
 }

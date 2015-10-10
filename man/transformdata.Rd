@@ -7,12 +7,12 @@
 transformdata(object, dataobject)
 }
 \arguments{
-\item{object}{}
+\item{object}{(PreprocessorClass) object}
 
-\item{dataobject}{}
+\item{dataobject}{(DataClass/data frame) object}
 }
 \description{
 transformdata is a generic function. Its methods are defined by setpreprocessor().
-The function intented for package internal use.
+The function is intented for package internal use.
 }
 

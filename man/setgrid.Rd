@@ -19,6 +19,9 @@ setgrid takes the preprocessing phases, which contain preprocessors and creates
 the combinations of them as a grid. It then computes and stores the transformed
 data sets for each combination. setgrid initializes a GridClass object.
 }
+\details{
+If there are missing value, imputation phase must be set as first phase.
+}
 \examples{
 ## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
 }

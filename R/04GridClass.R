@@ -45,6 +45,7 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
 #' @return a GridClass object
 #' @examples
 #' ## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
+#' @details If there are missing value, imputation phase must be set as first phase.
 #' @export
 
     setgrid <- function(phases, data){

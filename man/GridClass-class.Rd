@@ -10,7 +10,7 @@ GridClass is an interface for extending the system.
 }
 \details{
 Extensions can include approximate combinatorial optimization for finding near-best
-combinations faster
+combinations faster.
 }
 \section{Slots}{
 

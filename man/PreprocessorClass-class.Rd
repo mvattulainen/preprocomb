@@ -5,7 +5,8 @@
 \alias{PreprocessorClass-class}
 \title{PreprocessorClass}
 \description{
-PreprocessorClass is a virtual class. It is intented for package internal use.
+PreprocessorClass is an abstract class from which concrete preprocessor (sub) classes are inhereted.
+Inheritance is controlled by setpreprocessor() function.
 }
 \section{Slots}{
 
