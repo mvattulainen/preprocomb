@@ -4,10 +4,16 @@
 #' @importFrom randomForest randomForest
 NULL
 
-#' @importFrom methods setClass setGeneric setMethod
+#' @importFrom methods setClass setGeneric setMethod  extends getClass is new prototype signature slot
 NULL
 
 #' @import caret
+NULL
+
+#' @importFrom stats cor lowess predict quantile rbinom sd
+NULL
+
+#' @importFrom utils tail
 NULL
 
 ## UTILS

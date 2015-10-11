@@ -22,10 +22,12 @@ Imports:
     caretEnsemble,
     methods,
     clustertend,
-    e1071
+    e1071,
+    stats,
+    utils
 LazyData: TRUE
-URL: http://github.com/mvattulainen/preprocomb
-BugReports: http://github.com/mvattulainen/preprocomb/issues
+URL: https://github.com/mvattulainen/preprocomb
+BugReports: https://github.com/mvattulainen/preprocomb/issues
 Collate:
     '00Utils.R'
     '01DataClass.R'
