@@ -16,6 +16,9 @@ NULL
 #' @importFrom utils tail
 NULL
 
+#' @import arules
+NULL
+
 ## UTILS
 
 # Mode for VOTE
@@ -43,21 +46,25 @@ is.odd <- function(x) x %% 2 != 0
 
 # outlier removal
 
-orhcut <- function(x){
-orh_score <- suppressMessages(DMwR::outliers.ranking(x))
+orhcut <- function(dataobject){
+x_original <- dataobject@x
+y_original <- dataobject@y
+orh_score <- suppressMessages(DMwR::outliers.ranking(x_original))
 orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
 orh_cut <- quantile(orh_rank, .95)
-orh_obs <- which(orh_rank >= orh_cut)
-x <- x[-orh_obs,]
+orh_obs <- as.integer(names(which(orh_rank >= orh_cut)))
+x_preprocessed <- x_original[-orh_obs,]
+y_preprocessed <- y_original[-orh_obs]
+result <- initializedataclassobject(data.frame(x_preprocessed, y=y_preprocessed))
 }
 
 # oversampling
 
 oversample <- function(dataobject){
 
-    data <- data.frame(dataobject@x, y=dataobject@y)
+data <- data.frame(dataobject@x, y=dataobject@y)
 
-    if (nlevels(data$y) > 2) {stop("Oversampling can only be applied to binary class.")}
+if (nlevels(data$y) > 2) {stop("Oversampling can only be applied to binary class.")}
 
     freq <- table(data$y)
     temp <- order(freq)
@@ -134,7 +141,7 @@ rfimportance <- function(dataobject, qt){
 
 # near zero variance
 
-nzv <- function(x)
+nezevar <- function(x)
 {
   temp <- caret::nearZeroVar(x)
   if (length(temp) !=0) {
@@ -148,5 +155,5 @@ smoothlowess <- function(y){
   result <-data.frame(round(apply(y, 2, function(y) lowess(y[order(y)], f=1/2)[[2]][match(y, y[order(y)])]),2))
 }
 
-globalVariables(c("result","combpredict", "predictor", "skewness"))
+#globalVariables(c("result","combinationevaluation", "predictor", "skewness"))
 

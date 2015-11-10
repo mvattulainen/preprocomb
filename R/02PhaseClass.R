@@ -27,7 +27,7 @@ setphase <- function(phasename, preprocessor, preimpute){
 
   listofpreprocessors <- as.list(preprocessor)
   if (any(unlist(lapply(listofpreprocessors, function(x) extends(x, "PreprocessorClass")))=="FALSE")) {
-    stop("All elements of argument 'preprocessor' must point to sub classes of BaseClass constructed with function 'addpreprocessor'.") }
+    stop("All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor'.") }
 
   phaseclassobject <- new("PhaseClass", objectname=phasename, preimpute=preimpute)
   phaseclassobject@preprotransformations <- listofpreprocessors

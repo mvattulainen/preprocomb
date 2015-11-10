@@ -1,37 +1,39 @@
 #' @include 00Utils.R
 NULL
 
-## DATA
-
 setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", completeobs="logical", classbalance="logical", corrbelowdotnine="logical", ntopratiotwoplus="logical", mindimensions="logical"))
 
-validatedataclassobject <- function(dataclassobject){
+validatedata <- function(object){
 
-  temp <- length(caret::nearZeroVar(dataclassobject@x))
-  dataclassobject@variance <- temp==0
+  data <- object
 
-  temp1 <- all(apply(dataclassobject@x, 1:2, is.finite))
-  dataclassobject@finite <- temp1==TRUE
+  temp <- length(caret::nearZeroVar(data@x))
+  data@variance <- temp==0
 
-  temp2 <- any(apply(dataclassobject@x, 1:2, is.na))
-  dataclassobject@completeobs <- temp2==FALSE
+  temp1 <- all(apply(data@x, 1:2, is.finite))
+  data@finite <- temp1==TRUE
 
-  temp3 <- length(caret::nearZeroVar(data.frame(dataclassobject@y)))
-  dataclassobject@classbalance <- temp3==0
+  temp2 <- any(apply(data@x, 1:2, is.na))
+  data@completeobs <- temp2==FALSE
 
-  temp4 <- length(caret::findCorrelation(cor(dataclassobject@x, use="pairwise.complete.obs"), cutoff = .95))
-  dataclassobject@corrbelowdotnine <- temp4==0
+  temp3 <- length(caret::nearZeroVar(data.frame(data@y)))
+  data@classbalance <- temp3==0
 
-  temp5 <- nrow(dataclassobject@x) > (2*ncol(dataclassobject@x))
-  dataclassobject@ntopratiotwoplus <- temp5==TRUE
+  temp4 <- length(caret::findCorrelation(cor(data@x, use="pairwise.complete.obs"), cutoff = .95))
+  data@corrbelowdotnine <- temp4==0
 
-  temp6 <- all(dim(dataclassobject@x) > c(20,3))
-  dataclassobject@mindimensions <- temp6
+  temp5 <- nrow(data@x) > (2*ncol(data@x))
+  data@ntopratiotwoplus <- temp5==TRUE
 
-  return(dataclassobject)
+  temp6 <- all(dim(data@x) > c(20,3))
+  data@mindimensions <- temp6
+
+  minimumycheck <- min(table(data@y))
+  if (minimumycheck < 5) {stop("One level in the factor variable has less than six observations.")}
+
+  return(data)
 
   }
-
 
 initializedataclassobject <- function(data){
 
@@ -43,7 +45,7 @@ initializedataclassobject <- function(data){
   dataclassobject <- new("DataClass")
   dataclassobject@x <- data[sapply(data, is.numeric)]
   dataclassobject@y <- factor(data[sapply(data, is.factor)][,1])
-  dataclassobject <- validatedataclassobject(dataclassobject)
+  dataclassobject <- validatedata(dataclassobject)
   return(dataclassobject)
 }
 

@@ -1,24 +1,81 @@
-#' @include 03BaseClass.R
+#' @include 03PreprocessorClass.R
 NULL
 
-reportexitstatus <- function(datalist){
+reportexitstatus <- function(preprocesseddatasets){
 
-  variance <- unlist(lapply(datalist, function(x) slot(x, "variance")))
-  finite <- unlist(lapply(datalist, function(x) slot(x, "finite")))
-  completeobs <- unlist(lapply(datalist, function(x) slot(x, "completeobs")))
-  classbalance <- unlist(lapply(datalist, function(x) slot(x, "classbalance")))
-  corrbelowdotnine <- unlist(lapply(datalist, function(x) slot(x, "corrbelowdotnine")))
-  ntopratiotwoplus <- unlist(lapply(datalist, function(x) slot(x, "ntopratiotwoplus")))
-  mindimensions <- unlist(lapply(datalist, function(x) slot(x, "mindimensions")))
+  if(class(preprocesseddatasets)!="list"){stop("Argument 'preprocesseddatasets' to function 'reportexitstatus' must of a list.")}
+
+  variance <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "variance")))
+  finite <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "finite")))
+  completeobs <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "completeobs")))
+  classbalance <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "classbalance")))
+  corrbelowdotnine <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "corrbelowdotnine")))
+  ntopratiotwoplus <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "ntopratiotwoplus")))
+  mindimensions <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "mindimensions")))
 
   check <- all(c(variance, finite, completeobs, classbalance, corrbelowdotnine, ntopratiotwoplus, mindimensions))==TRUE
 
-  if (check==TRUE) {result <- c("Exit status: OK: Stable computation of misclassification errors expected.")}
-  if (check==FALSE) {result <- c("Exit status: Warning: Unstable computation of misclassification errors expected. See: yourgridclassobject@data")}
+  if (check==TRUE) {exitstatus <- c("Exit status: OK: Stable computation of misclassification errors expected.")}
+  if (check==FALSE) {exitstatus <- c("Exit status: Warning: Unstable computation of misclassification errors expected. See: yourgridclassobject@data")}
 
-  return(result)
+  return(exitstatus)
+
+}
+
+creategrid <- function(phases){
+  if(class(phases)!="list"){stop("Argument 'phases' to function 'creategrid' must of a list.")}
+  grid <- expand.grid(lapply(phases, function(x) eval(as.name(x))@preprotransformations))
+  colnames(grid) <- unlist(phases)
+  return(grid)
+}
+
+## DATA FORMATION
+
+initializedataslot <- function(classname, dataobject){
+
+  subclassobject <- new(classname)
+
+  if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)}
+
+  if (class(dataobject)=="data.frame") {transformeddata <- transformdata(subclassobject, initializedataclassobject(dataobject))}
+
+  if (is(dataobject, "PreprocessorClass")==TRUE) {transformeddata <- transformdata(subclassobject, dataobject@data)}
+
+  subclassobject@data <- transformeddata
+
+  return(subclassobject)
+
+}
+
+preprocessdatasets <- function(grid, dataobject){
+
+  if(class(grid)!="data.frame"){stop("Argument 'grid' must of a data frame of a GridClass object.")}
+  if(class(dataobject)!="DataClass"){stop("Argument 'dataobject' must of a DataClass object.")}
+
+  out_preprocesseddatasets <- vector(mode="list", nrow(grid))
+  firstcolumningrid <- 1
+
+  for (rowingrid in 1:nrow(grid))
+  {
+    out_preprocesseddatasets[rowingrid] <- initializedataslot(as.character(grid[rowingrid, firstcolumningrid]), dataobject) # first column of grid
+
+    if (ncol(grid) > 1){
+
+      for (columningrid in 2:ncol(grid))
+      {
+        out_preprocesseddatasets[rowingrid] <- initializedataslot(as.character(grid[rowingrid,columningrid]), out_preprocesseddatasets[[rowingrid]]@data)
+      }
+
+    }
 
   }
+
+  out_preprocesseddatasets <- lapply(out_preprocesseddatasets, function(x) slot(x, "data"))
+  out_preprocesseddatasets <- lapply(out_preprocesseddatasets, validatedata)
+  print(reportexitstatus(out_preprocesseddatasets))
+  return(out_preprocesseddatasets)
+}
+
 
 ## GRID
 
@@ -48,58 +105,32 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
 #' @details If there are missing value, imputation phase must be set as first phase.
 #' @export
 
-    setgrid <- function(phases, data){
+setgrid <- function(phases, data){
 
-    if(class(phases)!="character"){stop("Argument 'phases' must of a character vector.")}
-    if(class(data)!="data.frame"){stop("Argument 'data' must of a data frame.")}
+# Validate arguments
+if(class(phases)!="character"){stop("Argument 'phases' must be a character vector.")}
+if(class(data)!="data.frame"){stop("Argument 'data' must of a data frame.")}
 
-    phases <- as.list(phases)
-    if(!all(lapply(phases, function(x) class(eval(as.name(x))))=="PhaseClass")){
-    stop("All list elements in argument 'phases' must point to PhaseClass objects.")}
+phases <- as.list(phases)
+if(!all(lapply(phases, function(x) class(eval(as.name(x))))=="PhaseClass")){
+stop("All elements in argument 'phases' must point to PhaseClass objects.")}
 
-    dataclassobject <- initializedataclassobject(data)
+# Validate that number of class labels is two, if any phase includes "sample"
 
-    gridclassobject <- new("GridClass")
 
-    ## create grid
-    # extract preprocessors of each phase into a list
-    # create combinations by expanding the list
+# Initialize objects
 
-    templist <- lapply(phases, function(x) eval(as.name(x))@preprotransformations)
-    grid <- expand.grid(templist)
-    colnames(grid) <- unlist(phases)
-    gridclassobject@grid <- grid
+dataclassobject <- initializedataclassobject(data)
 
-    # process each row in the grid
-    gridclassobject@data <- formdata(grid, dataclassobject)
+gridclassobject <- new("GridClass")
 
-    return(gridclassobject)
-  }
+gridclassobject@grid <- creategrid(phases)
 
-  ## DATA FORMATION
+gridclassobject@data <- preprocessdatasets(gridclassobject@grid, dataclassobject)
 
-  formdata <- function(grid, dataobject){
+return(gridclassobject)
+}
 
-      result <- vector(mode="list", nrow(grid))
 
-      for (i in 1:nrow(grid)) # processing each row
-      {
-
-        result[i] <- prepro(as.character(grid[i, 1]), dataobject) # computation of first columns on a row in the grid
-
-        for (j in 2:ncol(grid))
-        {
-        result[i] <- prepro(as.character(grid[i,j]), result[[i]])@data # computation of subsequent columns on a row in the grid
-        }
-
-      }
-
-    # Output: list of DataClass objects
-
-    result <- lapply(result, validatedataclassobject) # validate the output of each row in the grid
-    print(reportexitstatus(result))
-    return(result)
-
-  }
 
 

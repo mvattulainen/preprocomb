@@ -4,16 +4,24 @@
 \alias{preprocomb}
 \title{preprocomb}
 \usage{
-preprocomb(models, grid, nholdout = 2, search = "exhaustive")
+preprocomb(models = "knn", gridclassobject, nholdout = 2,
+  searchmethod = "exhaustive", predict = TRUE, cluster = FALSE,
+  outlier = FALSE)
 }
 \arguments{
 \item{models}{(character) vector of models (names of models as defined in package caret), there must be an odd number of models}
 
-\item{grid}{(GridClass) object representing the grid of combinations}
+\item{gridclassobject}{(GridClass) object representing the grid of combinations}
 
-\item{nholdout}{(integer) number of holdout rounds, must be two or more, defaults to two}
+\item{nholdout}{(integer) number of holdout rounds for predictive classification, must be two or more, defaults to two}
 
-\item{search}{(character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent}
+\item{searchmethod}{(character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent}
+
+\item{predict}{(boolean) compute predictions, defaults to TRUE}
+
+\item{cluster}{(boolean) compute clustering tendency, defaults to FALSE}
+
+\item{outlier}{(boolean) compute outlier tendency, defaults to FALSE}
 }
 \value{
 a PreProCombClass object
@@ -28,7 +36,7 @@ caret messages will be displayed during processing
 }
 \examples{
 ## modifiediris <- droplevels(iris[-c(1:60),])
-## grid <- setgrid(phases=c("outlier", "scaling"), data=modifiediris)
+## grid <- setgrid(phases=c("outliers", "scaling"), data=modifiediris)
 ## library(kernlab)
 ## result <- preprocomb(models=c("svmRadial"), grid=grid, nholdout=2, search="exhaustive")
 ## result@allclassification

@@ -13,11 +13,11 @@ NULL
 #' @slot data (DataClass) object
 #' @slot classificationaccuracy (numeric) classification accuracy
 #' @slot hopkinsstatistic (numeric) clustering tendency
-#' @slot LOFskewness (numeric) skewness value of LOF scores
+#' @slot ORHskewness (numeric) skewness value of LOF scores
 #' @slot callhistory (character) vector of current and previous calls
 #' @export
 
-setClass("PreprocessorClass", representation(objectname="character", objectoperation="character", data="DataClass", classificationaccuracy="numeric", hopkinsstatistic="numeric", LOFskewness="numeric", callhistory="character"))
+setClass("PreprocessorClass", representation(objectname="character", objectoperation="character", data="DataClass", classificationaccuracy="numeric", hopkinsstatistic="numeric", ORHskewness="numeric", callhistory="character"))
 
 #' transformdata
 #'
@@ -38,9 +38,8 @@ setGeneric("transformdata", function(object, dataobject) {
 #' for removing rows that have missing values. An operation can process either only the numeric
 #' columns or also the class label column.
 #'
-#' If an operation deletes rows from numeric columns, the corresponding class
-#' labels are deleted automatically. If an operation uses both numeric columns
-#' and class labels, the defined operation must return both.
+#' If an operation utilizes class labels or deletes rows from numeric columns, mode="all" must be
+#' used and it must return a DataClass object.
 #'
 #' @param classname (character)
 #' @param operation (expression as character string)
@@ -63,56 +62,58 @@ setpreprocessor <- function(classname, operation, mode="numeric"){
 
   setMethod("transformdata", where=topenv(parent.frame()), signature(object = classname), function(object, dataobject) {
 
-    if (mode=="numeric") {replacer <- "dataobject@x"}
+    # create expression
+    if (mode=="numeric") {replacer <- "dataobject@x"} # only numeric columns from a DataClass object
     if (mode=="all") {replacer <- "dataobject"}
-
     functionexpression <- gsub("basedata", replacer, operation)
 
+    # execute expression, can return either data frame of DataClass object
     output <- eval(parse(text=functionexpression))
 
-    output_x <- output # DataClass object
-    if (mode=="all") {output_x <- output@x} # data frame
+    # numeric columns
+    if (mode=="numeric") {newdataobject <- initializedataclassobject(data.frame(x=output, y=dataobject@y))}
 
-    rownames(output_x) <- seq(1,nrow(output_x),1)
+    if (mode=="all") {newdataobject <- output}
 
-    output_y <- dataobject@y # if rows have not been removed
-    if (mode=="all") {output_y <- output@y}
+    return(newdataobject)
 
-    if (nrow(output_x) < nrow(dataobject@x)) { # if rows have been deleted
-      output_y <- output_y[as.integer(rownames(output_x))]}
-
-    transformeddata <- data.frame(x=output_x, y=output_y)
-    newdataobject <- initializedataclassobject(transformeddata)
-    newdataobject
   })
 
 }
 
-prepro <- function(classname, dataobject, validate=FALSE){
 
-  subclassobject <- new(classname)
 
-  if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)}
+interactiveprediction <- function(object, predictor, nholdout){
 
-  if (class(dataobject)=="data.frame") {transformeddata <- transformdata(subclassobject, initializedataclassobject(dataobject))}
+  tryCatch({
 
-  if (is(dataobject, "PreprocessorClass")==TRUE) {transformeddata <- transformdata(subclassobject, dataobject@data)}
+    data <- object@data
+    data <- data.frame(data@x, y=data@y)
+    con <- numeric(nholdout)
+    fitControl <- caret::trainControl(method = "boot", repeats=2)
 
-  #else {stop("Argument 'dataobject' must be either a DataClass object or object inhereted from PreprocessorClass")}
+    for (i in 1:nholdout){
 
-  subclassobject@data <- transformeddata
+      training <- caret::createDataPartition(data$y, times=1, list=FALSE, p=0.66)[,1]
 
-  if (validate==TRUE) {
-    subclassobject@data <- validatedataclassobject(transformeddata)
-  }
+      intrain <- data[training,]
+      intest <- data[-training,]
 
-  return(subclassobject)
+      model <- caret::train(y ~., data=intrain, method=predictor, trControl = fitControl)
+      prediction <- as.data.frame(predict(model, newdata=intest))
+      con[i] <- mean(as.character(prediction[,1])==as.character(intest$y))
+
+    }
+
+    con <- mean(con)
+
+  }, error= function(e) return(NA) )
 
 }
 
-#' prc
+#' prepro
 #'
-#' prc is the main function for interactive use. It takes data, transforms it according to the given
+#' prepro is the main function for interactive use. It takes data, transforms it according to the given
 #' preprocessor and computes statistics of the transformed data. The main use case is the chaining of
 #' the preprocessors as show in the examples below.
 #'
@@ -121,15 +122,14 @@ prepro <- function(classname, dataobject, validate=FALSE){
 #' @param model (character) caret model name, note: the required model library must be attached, defaults to "knn"
 #' @param nholdout (integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to two
 #' @param nsharehopkins (integer) denominator for sample size for hopkins statistics, defauls to three  (n=nrow(data)/3)
-#' @param klof (integer) number of data points used for neighborhood in LOF algorithm, defaults to five
 #' @return object of PreprocessorClass sub class
 #' @examples
-#' ## a <- prc("scale", iris)
-#' ## b <- prc("rfselect75", a)
-#' ## d <- prc("scale", iris, "rf", 20, 2, 10)
+#' ## a <- prepro(iris, "scale")
+#' ## b <- prepro(a, "rfselect75")
+#' ## d <- prepro(iris, "scale", "rf", 20, 2, 10)
 #' @export
 
-prc <- function(classname, dataobject, model="knn", nholdout=2, nsharehopkins=3, klof=5){
+prepro <- function(dataobject, classname, model="knn", nholdout=2, nsharehopkins=3){
 
   predictor <- model
 
@@ -152,13 +152,15 @@ prc <- function(classname, dataobject, model="knn", nholdout=2, nsharehopkins=3,
 
   subclassobject@data <- transformeddata
 
-  subclassobject@data <- validatedataclassobject(transformeddata)
+  subclassobject@data <- validatedata(transformeddata)
 
-  subclassobject@classificationaccuracy <- suppressWarnings(subclassprediction(subclassobject, predictor, nholdout))
+  subclassobject@classificationaccuracy <- suppressWarnings(interactiveprediction(subclassobject, predictor, nholdout))
 
   subclassobject@hopkinsstatistic <- unname(unlist(clustertend::hopkins((subclassobject@data)@x, n=as.integer(nrow((subclassobject@data)@x)/nsharehopkins)   )))
 
-  subclassobject@LOFskewness <- e1071::skewness(DMwR::lofactor((subclassobject@data)@x, k=klof))
+  orh_score <- suppressMessages(DMwR::outliers.ranking((subclassobject@data)@x))
+  orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
+  subclassobject@ORHskewness <- e1071::skewness(orh_rank)
 
   return(subclassobject)
 
@@ -172,7 +174,7 @@ setMethod("show", signature(object = "PreprocessorClass"), function(object){
   cat("# COMPUTATIONS:", "\n")
   cat("# classification accuracy:", round(object@classificationaccuracy, 2), "\n")
   cat("# hopkins statistic, clustering tendency:", round(object@hopkinsstatistic, 2), "\n")
-  cat("# skewness of LOF scores, outlier tendency:", round(object@LOFskewness, 2), "\n")
+  cat("# skewness of ORH scores, outlier tendency:", round(object@ORHskewness, 2), "\n")
   cat("\n")
   cat("# FITNESS FOR MODEL FITTING:", "\n")
   cat("# variance in all variables:", object@data@variance, "\n")
@@ -192,7 +194,7 @@ setpreprocessor("noaction", "identity(basedata)")
 
 # Low variance
 
-setpreprocessor("nearzerovar", "nzv(basedata)")
+setpreprocessor("nearzerovar", "nezevar(basedata)")
 
 # Imputation
 
@@ -202,18 +204,13 @@ setpreprocessor("knnimpute", "knnimputefunc(basedata)")
 setpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
 
 ## Scaling
-setpreprocessor("scale", "scale(basedata,center=FALSE)")
+setpreprocessor("basicscale", "scale(basedata, center=FALSE)")
 setpreprocessor("centerscale", "scale(basedata, center=TRUE)")
 setpreprocessor("minmaxscale", "data.frame(apply(basedata, 2, range01))")
 setpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
 
 # Outlier removal
-# setpreprocessor("lof", "lofcut(basedata)")
-setpreprocessor("orhoutlier", "orhcut(basedata)")
-
-# Class imbalance
-
-setpreprocessor("oversample", "oversample(basedata)", mode="all")
+setpreprocessor("orhoutlier", "orhcut(basedata)", mode="all")
 
 # Smoothing
 
@@ -236,8 +233,8 @@ setpreprocessor("undersample", "undersample(basedata)", mode="all")
 imputation <- setphase("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
 variance <- setphase("variance", c("noaction", "nearzerovar"), FALSE)
 smoothing <- setphase("smoothing", c("noaction", "lowesssmooth"), FALSE)
-scaling <- setphase("scaling", c("noaction", "scale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
-outlier <- setphase("outlier", c("noaction", "orhoutlier"), FALSE)
+scaling <- setphase("scaling", c("noaction", "basicscale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
+outliers <- setphase("outliers", c("noaction", "orhoutlier"), FALSE)
 sampling <- setphase("imbalance", c("noaction", "oversample", "undersample", "smotesample"), FALSE)
 selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FALSE)
 
@@ -264,7 +261,7 @@ testpreprocessors <- function(preprocessors=NULL, data=NULL){
   if (is.null(data)) {data <- data.frame(matrix(rbinom(4*30, 1, .5), ncol=4), class=sample(letters[1:2], 30, replace=TRUE))}
   cls <- as.list(preprocessors)
   testdata <- initializedataclassobject(data)
-  temp <- lapply(cls, function(x) prepro(x, testdata))
+  temp <- lapply(cls, function(x) initializedataslot(x, testdata))
   temp1 <- lapply(temp, function(x) slot(x, "data"))
   print(reportexitstatus(temp1))
   return(temp1)
