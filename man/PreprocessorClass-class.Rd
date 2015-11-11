@@ -21,7 +21,7 @@ Inheritance is controlled by setpreprocessor() function.
 
 \item{\code{hopkinsstatistic}}{(numeric) clustering tendency}
 
-\item{\code{ORHskewness}}{(numeric) skewness value of LOF scores}
+\item{\code{ORHskewness}}{(numeric) skewness value of ORH scores}
 
 \item{\code{callhistory}}{(character) vector of current and previous calls}
 }}

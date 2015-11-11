@@ -20,6 +20,9 @@ a PhaseClass object
 setphase is a constructor function for defining a phase.
 setphases initializes a PhaseClass object.
 }
+\details{
+All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'.
+}
 \examples{
 ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
 }

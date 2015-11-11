@@ -27,7 +27,7 @@ preprocessor and computes statistics of the transformed data. The main use case 
 the preprocessors as show in the examples below.
 }
 \examples{
-## a <- prepro(iris, "scale")
+## a <- prepro(iris, "basicscale")
 ## b <- prepro(a, "rfselect75")
 ## d <- prepro(iris, "scale", "rf", 20, 2, 10)
 }

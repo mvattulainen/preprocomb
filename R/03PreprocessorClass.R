@@ -13,7 +13,7 @@ NULL
 #' @slot data (DataClass) object
 #' @slot classificationaccuracy (numeric) classification accuracy
 #' @slot hopkinsstatistic (numeric) clustering tendency
-#' @slot ORHskewness (numeric) skewness value of LOF scores
+#' @slot ORHskewness (numeric) skewness value of ORH scores
 #' @slot callhistory (character) vector of current and previous calls
 #' @export
 
@@ -54,6 +54,8 @@ setGeneric("transformdata", function(object, dataobject) {
 #' ##
 #' ## An example using also class labels and a supporting function
 #' ## setpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
+#' @details The user-defined S4 class definitions are stored in global environment and thus the
+#' function can not be used from an other package.
 #' @export
 
 setpreprocessor <- function(classname, operation, mode="numeric"){
@@ -124,7 +126,7 @@ interactiveprediction <- function(object, predictor, nholdout){
 #' @param nsharehopkins (integer) denominator for sample size for hopkins statistics, defauls to three  (n=nrow(data)/3)
 #' @return object of PreprocessorClass sub class
 #' @examples
-#' ## a <- prepro(iris, "scale")
+#' ## a <- prepro(iris, "basicscale")
 #' ## b <- prepro(a, "rfselect75")
 #' ## d <- prepro(iris, "scale", "rf", 20, 2, 10)
 #' @export

@@ -25,6 +25,9 @@ columns or also the class label column.
 \details{
 If an operation utilizes class labels or deletes rows from numeric columns, mode="all" must be
 used and it must return a DataClass object.
+
+The user-defined S4 class definitions are stored in global environment and thus the
+function can not be used from an other package.
 }
 \examples{
 ## Set of examples using only numeric variables and no class labels

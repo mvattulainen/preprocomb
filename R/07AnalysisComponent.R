@@ -11,8 +11,7 @@
 #' @export
 
 showrules <- function(PreProCombClassobject, support=0.05, confidence=0.5){
-  combinations <- as(PreProCombClassobject@catclassification, "transactions")
-  rules <- arules::apriori(combinations, parameter = list(support = support, confidence = confidence), appearance=list(rhs='target=high', default='lhs'))
+  rules <- arules::apriori(PreProCombClassobject@catclassification, parameter = list(support = support, confidence = confidence), appearance=list(rhs='target=high', default='lhs'))
   arules::inspect(rules)
 }
 

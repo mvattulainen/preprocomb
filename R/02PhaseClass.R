@@ -17,6 +17,7 @@ setClass("PhaseClass", representation(objectname="character", preprotransformati
 #' @examples
 #' ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
 #' @export
+#' @details All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'.
 
 setphase <- function(phasename, preprocessor, preimpute){
 

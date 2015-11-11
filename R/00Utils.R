@@ -16,9 +16,6 @@ NULL
 #' @importFrom utils tail
 NULL
 
-#' @import arules
-NULL
-
 ## UTILS
 
 # Mode for VOTE
