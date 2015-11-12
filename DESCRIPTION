@@ -2,7 +2,7 @@ Package: preprocomb
 Type: Package
 Title: Tools for Preprocessing Combinations
 Version: 0.2.0
-Date: 2015-10-11
+Date: 2015-11-12
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
 Description: Preprocessing is often the most time-consuming phase in knowledge
@@ -38,5 +38,6 @@ Collate:
     '05PredictionControlClass.R'
     '06PreProCombClass.R'
     '07AnalysisComponent.R'
+    '08DefaultPreprocessorsAndPhases.R'
 Suggests:
     kernlab

@@ -4,17 +4,15 @@
 \alias{setpreprocessor}
 \title{setpreprocessor}
 \usage{
-setpreprocessor(classname, operation, mode = "numeric")
+setpreprocessor(classname, operation)
 }
 \arguments{
 \item{classname}{(character)}
 
 \item{operation}{(expression as character string)}
-
-\item{mode}{(character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with S4 slots x (numeric variables) and y (factor of class labels)}
 }
 \value{
-NULL definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
+NULL, definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
 }
 \description{
 setpreprocessor is a constructor function for defining a preprocessor. The main
@@ -32,11 +30,5 @@ function can not be used from an other package.
 \examples{
 ## Set of examples using only numeric variables and no class labels
 ## setpreprocessor("naomit", "na.omit(basedata)")
-## setpreprocessor("scale", "scale(basedata,center=FALSE)")
-## setpreprocessor("nooutlierremove", "identity(basedata)")
-## setpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
-##
-## An example using also class labels and a supporting function
-## setpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
 }
 

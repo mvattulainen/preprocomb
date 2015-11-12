@@ -33,14 +33,25 @@ validatedata <- function(object){
 
   return(data)
 
-  }
+}
+
+#' initializedataclassobject
+#'
+#' initializedataclassobject is a function to construct a DataClass object.
+#' The main use case is to return a DataClass object from user-defined preprocessors
+#' in setpreprocessor()
+#'
+#' @param data (data.frame)
+#' @details Argument 'data' must have only numeric columns and one factor column.
+#' @export
+#' @examples
+#' ## dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@@x), dataobject@@y))
 
 initializedataclassobject <- function(data){
 
   if(class(data)!="data.frame"){stop("Argument 'data' must be a data frame.")}
   if(sum(sapply(data, is.factor)==TRUE)!=1) {stop("Argument 'data' must have one and only one factor column.")}
   if(sum(sapply(data, is.numeric)==TRUE)!=ncol(data)-1) {stop("Argument 'data' must have only numeric columns and one factor column.")}
-  #if(ncol(data)<5) {stop("Argument 'data' must have five or more columns.")}
 
   dataclassobject <- new("DataClass")
   dataclassobject@x <- data[sapply(data, is.numeric)]

@@ -1,3 +1,6 @@
+#' @include 06PreProCombClass.R
+NULL
+
 
 #' showrules
 #'

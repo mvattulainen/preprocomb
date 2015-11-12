@@ -43,41 +43,23 @@ setGeneric("transformdata", function(object, dataobject) {
 #'
 #' @param classname (character)
 #' @param operation (expression as character string)
-#' @param mode (character) default to "numeric" for operation to be computed on data frame with numeric variables, option="all" for DataClass object with S4 slots x (numeric variables) and y (factor of class labels)
-#' @return NULL definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
+#' @return NULL, definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
 #' @examples
 #' ## Set of examples using only numeric variables and no class labels
 #' ## setpreprocessor("naomit", "na.omit(basedata)")
-#' ## setpreprocessor("scale", "scale(basedata,center=FALSE)")
-#' ## setpreprocessor("nooutlierremove", "identity(basedata)")
-#' ## setpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
-#' ##
-#' ## An example using also class labels and a supporting function
-#' ## setpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
 #' @details The user-defined S4 class definitions are stored in global environment and thus the
 #' function can not be used from an other package.
 #' @export
 
-setpreprocessor <- function(classname, operation, mode="numeric"){
+setpreprocessor <- function(classname, operation){
 
   setClass(classname, contains="PreprocessorClass", where=topenv(parent.frame()), prototype=prototype(objectname=classname, objectoperation=operation))
 
   setMethod("transformdata", where=topenv(parent.frame()), signature(object = classname), function(object, dataobject) {
 
-    # create expression
-    if (mode=="numeric") {replacer <- "dataobject@x"} # only numeric columns from a DataClass object
-    if (mode=="all") {replacer <- "dataobject"}
-    functionexpression <- gsub("basedata", replacer, operation)
+    output <- eval(parse(text=operation))
 
-    # execute expression, can return either data frame of DataClass object
-    output <- eval(parse(text=functionexpression))
-
-    # numeric columns
-    if (mode=="numeric") {newdataobject <- initializedataclassobject(data.frame(x=output, y=dataobject@y))}
-
-    if (mode=="all") {newdataobject <- output}
-
-    return(newdataobject)
+    return(output)
 
   })
 
@@ -188,57 +170,6 @@ setMethod("show", signature(object = "PreprocessorClass"), function(object){
   cat("# 3 or more predictors and more than 20 observations:", object@data@mindimensions, "\n")
   } )
 
-# DEFAULT PREPROCESSORS AND PHASES ==========================
-
-# NO ACTION
-
-setpreprocessor("noaction", "identity(basedata)")
-
-# Low variance
-
-setpreprocessor("nearzerovar", "nezevar(basedata)")
-
-# Imputation
-
-setpreprocessor("naomit", "na.omit(basedata)")
-setpreprocessor("meanimpute", "data.frame(apply(basedata, 2, meanrep))")
-setpreprocessor("knnimpute", "knnimputefunc(basedata)")
-setpreprocessor("randomforestimpute", "rfimputefunc(basedata)", mode="all")
-
-## Scaling
-setpreprocessor("basicscale", "scale(basedata, center=FALSE)")
-setpreprocessor("centerscale", "scale(basedata, center=TRUE)")
-setpreprocessor("minmaxscale", "data.frame(apply(basedata, 2, range01))")
-setpreprocessor("softmaxscale", "data.frame(apply(basedata, 2, DMwR::SoftMax))")
-
-# Outlier removal
-setpreprocessor("orhoutlier", "orhcut(basedata)", mode="all")
-
-# Smoothing
-
-setpreprocessor("lowesssmooth", "smoothlowess(basedata)")
-
-
-# Feature selection
-
-setpreprocessor("rfselect75", "rfimportance(basedata, .25)", mode="all")
-setpreprocessor("rfselect50", "rfimportance(basedata, .50)", mode="all")
-
-# Class imbalance
-
-setpreprocessor("smotesample", "smotesample(basedata)", mode="all")
-setpreprocessor("oversample", "oversample(basedata)", mode="all")
-setpreprocessor("undersample", "undersample(basedata)", mode="all")
-
-# Phases
-
-imputation <- setphase("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
-variance <- setphase("variance", c("noaction", "nearzerovar"), FALSE)
-smoothing <- setphase("smoothing", c("noaction", "lowesssmooth"), FALSE)
-scaling <- setphase("scaling", c("noaction", "basicscale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
-outliers <- setphase("outliers", c("noaction", "orhoutlier"), FALSE)
-sampling <- setphase("imbalance", c("noaction", "oversample", "undersample", "smotesample"), FALSE)
-selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FALSE)
 
 
 ### BASETEST ==========
