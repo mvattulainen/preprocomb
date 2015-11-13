@@ -35,8 +35,7 @@ setpreprocessor("naomit", "naomit(dataobject)")
 meanimpute <- function(dataobject){
   temp <- apply(dataobject@x, 1, function(x) any(is.na(x)))
   if (any(temp==TRUE)){
-  x_new <- dataobject@x
-  x_new[is.na(x_new)] <- mean(x_new, na.rm=TRUE)
+  x_new <- data.frame(apply(dataobject@x, 2, function(x) meanimpute_aux(x)))
   dataobject <- initializedataclassobject(data.frame(x_new, dataobject@y))
 }
   return(dataobject)
@@ -77,7 +76,7 @@ setpreprocessor("randomforestimpute", "rfimputefunc(dataobject)")
 # basic
 
 basicscaling <- function(dataobject){
-  dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@x), dataobject@y))
+  dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@x, center=FALSE), dataobject@y))
 }
 
 setpreprocessor("basicscale", "basicscaling(dataobject)")

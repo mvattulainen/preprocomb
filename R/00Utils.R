@@ -32,5 +32,10 @@ range01 <- function(y){
   newrange <- (y-min(y))/(max(y)-min(y))
 }
 
+meanimpute_aux <- function(x){
+  x[is.na(x)] <- mean(x, na.rm=TRUE) #convert the item with NA to median value from the column
+  x
+  }
+
 #globalVariables(c("result","combinationevaluation", "predictor", "skewness"))
 

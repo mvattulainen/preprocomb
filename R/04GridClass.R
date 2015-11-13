@@ -9,11 +9,10 @@ reportexitstatus <- function(preprocesseddatasets){
   finite <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "finite")))
   completeobs <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "completeobs")))
   classbalance <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "classbalance")))
-  corrbelowdotnine <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "corrbelowdotnine")))
   ntopratiotwoplus <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "ntopratiotwoplus")))
   mindimensions <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "mindimensions")))
 
-  check <- all(c(variance, finite, completeobs, classbalance, corrbelowdotnine, ntopratiotwoplus, mindimensions))==TRUE
+  check <- all(c(variance, finite, completeobs, classbalance, ntopratiotwoplus, mindimensions))==TRUE
 
   if (check==TRUE) {exitstatus <- c("Exit status: OK: Stable computation of misclassification errors expected.")}
   if (check==FALSE) {exitstatus <- c("Exit status: Warning: Unstable computation of misclassification errors expected. See: yourgridclassobject@data")}

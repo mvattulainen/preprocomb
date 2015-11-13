@@ -1,7 +1,7 @@
 #' @include 00Utils.R
 NULL
 
-setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", completeobs="logical", classbalance="logical", corrbelowdotnine="logical", ntopratiotwoplus="logical", mindimensions="logical"))
+setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", completeobs="logical", classbalance="logical", ntopratiotwoplus="logical", mindimensions="logical"))
 
 validatedata <- function(object){
 
@@ -18,9 +18,6 @@ validatedata <- function(object){
 
   temp3 <- length(caret::nearZeroVar(data.frame(data@y)))
   data@classbalance <- temp3==0
-
-  temp4 <- length(caret::findCorrelation(cor(data@x, use="pairwise.complete.obs"), cutoff = .95))
-  data@corrbelowdotnine <- temp4==0
 
   temp5 <- nrow(data@x) > (2*ncol(data@x))
   data@ntopratiotwoplus <- temp5==TRUE
