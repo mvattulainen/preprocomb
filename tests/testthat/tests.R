@@ -27,7 +27,4 @@ testcomb <- preprocomb(gridclassobject=testgrid, models="knn", nholdout=2, predi
 expect_is(testcomb, "PreProCombClass")
 expect_true(!all(testcomb@rawall[,2:7]==0))
 
-## AnalysisComponent
-
-expect_null(showrules(testcomb))
 
