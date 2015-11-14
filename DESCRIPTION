@@ -15,7 +15,7 @@ Description: Preprocessing is often the most time-consuming phase in knowledge
     imputation, scaling, outlier removal, noise smoothing, feature selection and
     class imbalance correction.
 License: GPL-2
-Imports:
+Imports: 
     DMwR,
     randomForest,
     caret,
@@ -29,7 +29,7 @@ Imports:
 LazyData: TRUE
 URL: https://github.com/mvattulainen/preprocomb
 BugReports: https://github.com/mvattulainen/preprocomb/issues
-Collate:
+Collate: 
     '00Utils.R'
     '01DataClass.R'
     '02PhaseClass.R'
@@ -39,5 +39,6 @@ Collate:
     '06PreProCombClass.R'
     '07AnalysisComponent.R'
     '08DefaultPreprocessorsAndPhases.R'
-Suggests:
-    kernlab
+Suggests: 
+    kernlab,
+    testthat

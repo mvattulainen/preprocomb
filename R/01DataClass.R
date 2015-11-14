@@ -26,7 +26,7 @@ validatedata <- function(object){
   data@mindimensions <- temp6
 
   minimumycheck <- min(table(data@y))
-  if (minimumycheck < 5) {stop("One level in the factor variable has less than six observations.")}
+  if (minimumycheck < 5) {stop("One level in the factor variable has less than five observations.")}
 
   return(data)
 

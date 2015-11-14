@@ -15,7 +15,7 @@ showrules(PreProCombClassobject, support = 0.05, confidence = 0.5)
 }
 \description{
 showrules shows association rules for classification accuracy.
-Classification accuracy is categorical as 'high' for best twenty
-percent and 'low' for rest.
+Classification accuracy label  'high' corresponds to best twenty
+percent and 'low' for the rest.
 }
 

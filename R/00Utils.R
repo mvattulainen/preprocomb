@@ -13,7 +13,7 @@ NULL
 #' @importFrom stats cor lowess predict quantile rbinom sd
 NULL
 
-#' @importFrom utils tail
+#' @importFrom utils tail head
 NULL
 
 ## FUNCTIONS
