@@ -75,26 +75,26 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
   # all classification accuracies
 
   preproout <- data.frame(matrix(paste(round(as.matrix(out[[1]]),2), round(as.matrix(out[[2]]),2), sep="+-"), nrow=nrow(out[[1]])))
-  colnames(preproout) <- c(predictors, "VOTE")
+  colnames(preproout) <- c(predictors, "ALL_MEAN")
   preprocombclassobject@allclassification <- data.frame(as.data.frame(out[[5]]), preproout)
 
   # best best classification accuracies
 
-  bestaccuracies <-  head(preprocombclassobject@allclassification[order(preprocombclassobject@allclassification$VOTE, decreasing=TRUE),])
+  bestaccuracies <-  head(preprocombclassobject@allclassification[order(preprocombclassobject@allclassification$ALL_MEAN, decreasing=TRUE),])
   preprocombclassobject@bestclassification <- bestaccuracies
 
   # raw data
 
   rawall <- data.frame(out[[5]], out[[1]], out[[2]], out[[3]], out[[4]])
-  colnames(rawall)[(ncol(out[[5]])+1):ncol(rawall)] <- c(paste(c(predictors, "VOTE"), "Mean", sep=""), paste(c(predictors, "VOTE"), "SD", sep=""), "Hopkins", "Orh_skewness")
+  colnames(rawall)[(ncol(out[[5]])+1):ncol(rawall)] <- c(paste(c(predictors, "ALL_MEAN"), "Mean", sep=""), paste(c(predictors, "ALL_MEAN"), "SD", sep=""), "Hopkins", "Orh_skewness")
   preprocombclassobject@rawall <- rawall
 
   # raw categorical
 
   tempout <- data.frame(out[[5]], out[[1]][ncol(out[[1]])])
-  colnames(tempout)[ncol(tempout)] <- "VOTE"
-  cutpoint <- quantile(tempout$VOTE, .80)
-  tempout$target <- cut(tempout$VOTE, breaks=c(-Inf, cutpoint, Inf), labels=c("low", "high"))
+  colnames(tempout)[ncol(tempout)] <- "ALL_MEAN"
+  cutpoint <- quantile(tempout$ALL_MEAN, .80)
+  tempout$target <- cut(tempout$ALL_MEAN, breaks=c(-Inf, cutpoint, Inf), labels=c("low", "high"))
   tempout <- tempout[,-(ncol(tempout)-1)]
   preprocombclassobject@catclassification <- tempout
 

@@ -32,6 +32,11 @@ setpreprocessor("naomit", "naomit(dataobject)")
 
 # Mean imputation
 
+meanimpute_aux <- function(x){
+  x[is.na(x)] <- mean(x, na.rm=TRUE) #convert the item with NA to median value from the column
+  x
+}
+
 meanimpute <- function(dataobject){
   temp <- apply(dataobject@x, 1, function(x) any(is.na(x)))
   if (any(temp==TRUE)){
@@ -42,6 +47,19 @@ meanimpute <- function(dataobject){
 }
 
 setpreprocessor("meanimpute", "meanimpute(dataobject)")
+
+# mean class imputation
+
+meanclass <- function(dataobject){
+  temp <- apply(dataobject@x, 1, function(x) any(is.na(x)))
+  if (any(temp==TRUE)){
+    x_new <- zoo::na.aggregate(dataobject@x, dataobject@y, FUN=mean)
+    dataobject <- initializedataclassobject(data.frame(x_new, dataobject@y))
+  }
+  return(dataobject)
+}
+
+setpreprocessor("meanclassimpute", "meanclass(dataobject)")
 
 # knnimputation
 
@@ -91,6 +109,10 @@ setpreprocessor("centerscale", "centerscaling(dataobject)")
 
 # min-max scaling
 
+range01 <- function(y){
+  newrange <- (y-min(y))/(max(y)-min(y))
+}
+
 minmaxscaling <- function(dataobject){
 
   x_new <- data.frame(apply(dataobject@x, 2, range01))
@@ -98,6 +120,16 @@ minmaxscaling <- function(dataobject){
 }
 
 setpreprocessor("minmaxscale", "minmaxscaling(dataobject)")
+
+decimalscaling <- function(dataobject){
+  m <- apply(dataobject@x,2,max)
+  v <- round(log10(m),0)
+  c <- 10^v
+  x_new <- sweep(dataobject@x, 2, c, `/`)
+dataobject <- initializedataclassobject(data.frame(x=x_new, y=dataobject@y))
+}
+
+setpreprocessor("decimalscale", "decimalscaling(dataobject)")
 
 softmaxscaling <- function(dataobject){
   dataobject <- initializedataclassobject(data.frame(x=data.frame(apply(dataobject@x, 2, DMwR::SoftMax)), dataobject@y))
@@ -166,18 +198,18 @@ setpreprocessor("undersample", "undersample(dataobject)")
 
 # smote sampling
 
-smotesample <- function(dataobject){
-  temp <- data.frame(dataobject@x, y=dataobject@y)
-
-  if (nlevels(temp$y) > 2) {stop("SMOTE can only be applied to binary class.")}
-
-  temp1 <- as.numeric(table(temp$y))
-  temp2 <- order(temp1)
-  temp3 <- temp1[temp2[2]]/temp1[temp2[1]]
-  temp4 <- temp1[temp2[2]]/(temp1[temp2[2]]-temp1[temp2[1]])
-  newData <- DMwR::SMOTE(y ~ ., temp, perc.over = 100*temp3, perc.under=100*temp4)
-  dataobject <- initializedataclassobject(newData)
-}
+#smotesample <- function(dataobject){
+#  temp <- data.frame(dataobject@x, y=dataobject@y)
+#
+#  if (nlevels(temp$y) > 2) {stop("SMOTE can only be applied to binary class.")}
+#
+#  temp1 <- as.numeric(table(temp$y))
+#  temp2 <- order(temp1)
+#  temp3 <- temp1[temp2[2]]/temp1[temp2[1]]
+#  temp4 <- temp1[temp2[2]]/(temp1[temp2[2]]-temp1[temp2[1]])
+#  newData <- DMwR::SMOTE(y ~ ., temp, perc.over = 100*temp3, perc.under=100*temp4)
+#  dataobject <- initializedataclassobject(newData)
+#}
 
 setpreprocessor("smotesample", "smotesample(dataobject)")
 
@@ -206,7 +238,12 @@ smoothlowess <- function(dataobject){
 
 setpreprocessor("lowesssmooth", "smoothlowess(dataobject)")
 
-# NO ACTION
+smoothcoarse <- function(dataobject){
+   x_new <- data.frame(apply(dataobject@x, 2, function(y) round(y, digits=-log10(abs(y))+1)))
+   dataobject <- initializedataclassobject(data.frame(x=x_new, y=dataobject@y))
+}
+
+setpreprocessor("coarsesmooth", "smoothcoarse(dataobject)")
 
 setpreprocessor("noaction", "identity(dataobject)")
 
@@ -215,10 +252,12 @@ setpreprocessor("noaction", "identity(dataobject)")
 
 #### PHASES
 
-imputation <- setphase("imputation", c("naomit", "meanimpute", "knnimpute", "randomforestimpute"), TRUE)
+imputation <- setphase("imputation", c("naomit", "meanimpute", "meanclassimpute", "knnimpute", "randomforestimpute"), TRUE)
 variance <- setphase("variance", c("noaction", "nearzerovar"), FALSE)
-smoothing <- setphase("smoothing", c("noaction", "lowesssmooth"), FALSE)
-scaling <- setphase("scaling", c("noaction", "basicscale", "centerscale", "minmaxscale", "softmaxscale"), FALSE)
+smoothing <- setphase("smoothing", c("noaction", "coarsesmooth", "lowesssmooth"), FALSE)
+scaling <- setphase("scaling", c("noaction", "basicscale", "centerscale", "minmaxscale", "decimalscale", "softmaxscale"), FALSE)
 outliers <- setphase("outliers", c("noaction", "orhoutlier"), FALSE)
-sampling <- setphase("imbalance", c("noaction", "oversample", "undersample", "smotesample"), FALSE)
+sampling <- setphase("imbalance", c("noaction", "oversample", "undersample"), FALSE) # add:  "smotesample"
 selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FALSE)
+
+preprodefault <- c("imputation", "variance", "smoothing", "scaling", "outliers", "sampling", "selection")

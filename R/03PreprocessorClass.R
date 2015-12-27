@@ -165,7 +165,6 @@ setMethod("show", signature(object = "PreprocessorClass"), function(object){
   cat("# only finite values:", object@data@finite, "\n")
   cat("# complete observations:", object@data@completeobs, "\n")
   cat("# class balance:", object@data@classbalance, "\n")
-  cat("# not multicollinear above .9:", object@data@corrbelowdotnine, "\n")
   cat("# n to p ratio more than 2:", object@data@ntopratiotwoplus, "\n")
   cat("# 3 or more predictors and more than 20 observations:", object@data@mindimensions, "\n")
   } )

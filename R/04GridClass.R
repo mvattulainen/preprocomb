@@ -32,6 +32,8 @@ creategrid <- function(phases){
 
 initializedataslot <- function(classname, dataobject){
 
+  tryCatch({
+
   subclassobject <- new(classname)
 
   if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)}
@@ -44,9 +46,12 @@ initializedataslot <- function(classname, dataobject){
 
   return(subclassobject)
 
+  }, error= function(e) return({subclassobject <- new(classname)})
+  )
+
 }
 
-preprocessdatasets <- function(grid, dataobject){
+executepreprocessing <- function(grid, dataobject){
 
   if(class(grid)!="data.frame"){stop("Argument 'grid' must of a data frame of a GridClass object.")}
   if(class(dataobject)!="DataClass"){stop("Argument 'dataobject' must of a DataClass object.")}
@@ -84,11 +89,12 @@ preprocessdatasets <- function(grid, dataobject){
 #' GridClass is an interface for extending the system.
 #' @slot grid (data frame) preprocessor combinations
 #' @slot data (list) DataClass objects
+#' @slot validation (data frame) validation results
 #' @details Extensions can include approximate combinatorial optimization for finding near-best
 #' combinations faster.
 #' @export
 
-setClass("GridClass", representation(grid="data.frame", data="list"))
+setClass("GridClass", representation(grid="data.frame", data="list", validation="data.frame"))
 
 #' setgrid
 #'
@@ -98,13 +104,14 @@ setClass("GridClass", representation(grid="data.frame", data="list"))
 #
 #' @param phases (character) vector of phases
 #' @param data (data frame)
+#' @param diagnostics (logical) run testpreprocessor(), defaults to TRUE
 #' @return a GridClass object
 #' @examples
-#' ## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
+#' ## grid <- setgrid(phases=c("outliers", "selection"), data=iris)
 #' @details If there are missing value, imputation phase must be set as first phase.
 #' @export
 
-setgrid <- function(phases, data){
+setgrid <- function(phases, data, diagnostics=TRUE){
 
 # Validate arguments
 if(class(phases)!="character"){stop("Argument 'phases' must be a character vector.")}
@@ -114,9 +121,6 @@ phases <- as.list(phases)
 if(!all(lapply(phases, function(x) class(eval(as.name(x))))=="PhaseClass")){
 stop("All elements in argument 'phases' must point to PhaseClass objects.")}
 
-# Validate that number of class labels is two, if any phase includes "sample"
-
-
 # Initialize objects
 
 dataclassobject <- initializedataclassobject(data)
@@ -125,7 +129,19 @@ gridclassobject <- new("GridClass")
 
 gridclassobject@grid <- creategrid(phases)
 
-gridclassobject@data <- preprocessdatasets(gridclassobject@grid, dataclassobject)
+# Validate preprocessors
+
+if (diagnostics==TRUE){
+print("Running diagnostics on single preprocessors:")
+validation <- testpreprocessors(unique(unlist(gridclassobject@grid)))
+}
+print("Preprocessing data set by combinations:")
+gridclassobject@data <- executepreprocessing(gridclassobject@grid, dataclassobject)
+
+# Validation results on combinations
+validationresults <- data.frame(gridclassobject@grid, data.frame(t(data.frame(lapply(gridclassobject@data, extract)))))
+row.names(validationresults) <- NULL
+gridclassobject@validation <- validationresults
 
 return(gridclassobject)
 }

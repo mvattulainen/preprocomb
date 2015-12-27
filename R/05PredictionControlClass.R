@@ -1,24 +1,62 @@
 #' @include 04GridClass.R
 NULL
 
-# Get misclassification error/ programmatic mode/ many models
+# getprogrammaticprediction
 
-getprogrammaticprediction <- function(preprocesseddataset, predictors, fitControl){
+#' getprogrammaticprediction output classification accuracy. This function is exported
+#' to be used by package metaheur.
+#' @param preprocesseddataset (DataClass)
+#' @param predictors caret models
+#' @param nholdout number of holdout rounds
+#' @export
+
+getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout){
 
   tryCatch({
 
-  training <- caret::createDataPartition(preprocesseddataset$y, times=1, list=FALSE, p=0.66)[,1]
+    ## TUNING MODEL PARAMETERS
 
-  intrain <- preprocesseddataset[training,]
-  intest <- preprocesseddataset[-training,]
+    fitControl <- caret::trainControl(method="boot", number=2, savePredictions=TRUE)
+    training <- caret::createDataPartition(preprocesseddataset$y, times=1, list=FALSE, p=0.66)[,1]
+    intrain <- preprocesseddataset[training,]
+    intest <- preprocesseddataset[-training,]
 
-  model_list <- caretEnsemble::caretList(y ~., data=intrain, methodList=predictors, trControl=fitControl)
-  prediction <- as.data.frame(predict(model_list, newdata=intest))
-  prediction$vote <- apply(prediction, 1, Mode)
-  output <- as.numeric(lapply(prediction, function(x) mean(as.character(x)==as.character(intest$y))))
+    klist <- list()
+    for (k in 1:length(predictors))
+    {
+      mod <- caret::train(y ~., data=intrain, method=predictors[k], trControl=fitControl)
+      klist <- c(klist, list(mod$bestTune))
+    }
+
+    if (length(predictors)!=length(klist)) stop("One of the selected models does not have tuning parameters.")
+
+
+    ## HOLDOUTS
+
+
+    modelsresults <- data.frame(matrix(ncol=length(predictors)+1, nrow=nholdout))
+
+    for (l in 1:length(predictors))
+    {
+
+      holdoutresults <- numeric()
+
+      for(m in 1:nholdout)
+      {
+        training <- caret::createDataPartition(preprocesseddataset$y, times=1, list=FALSE, p=0.66)[,1]
+        intrain <- preprocesseddataset[training,]
+        intest <- preprocesseddataset[-training,]
+        mod <- caret::train(y ~., data=intrain, method=predictors[l], tuneGrid=klist[[l]], trControl=trainControl(method="none"))
+        prediction <- predict(mod, newdata=intest)
+        holdoutresults[m] <- mean(prediction==intest$y)
+      }
+      modelsresults[,l] <- holdoutresults
+    }
+    modelsresults[,length(predictors)+1] <- apply(modelsresults, 1, function(x) mean(x, na.rm=TRUE))
 
   }, error= function(e) return(NA) )
 
+  return(modelsresults)
 }
 
 gethopkins <- function(dat){
@@ -49,7 +87,7 @@ combinationevaluation <- function(predictors, gridclassobject, nholdout, searchm
 
   # initializations
   grid <- gridclassobject
-  fitControl <- caret::trainControl(method="boot", repeats=2, savePredictions=TRUE)
+  fitControl <- caret::trainControl(method="boot", number=2, savePredictions=TRUE)
 
   # grid rows to be included based on search argument
   gridrowsincludedinsearch <- gridrowsinsearch(searchmethod, grid)
@@ -81,17 +119,13 @@ combinationevaluation <- function(predictors, gridclassobject, nholdout, searchm
     dat <- grid@data[[j]]
     dat1 <- data.frame(y=dat@y, x=dat@x)
 
-    holdoutclassificationaccuracies <- data.frame(matrix(nrow=nholdout, ncol=ncomputations))
-
-    # predictions
+    # classification accuracy
 
     if (predict==TRUE) {
 
-    for (holdoutround in 1:nholdout){
-      holdoutclassificationaccuracies[holdoutround,] <- getprogrammaticprediction(dat1, predictors, fitControl)
-    }
-    outmean[which(gridrowsincludedinsearch==j),] <- apply(holdoutclassificationaccuracies, 2, function(x) mean(x, na.rm=TRUE))
-    outsd[which(gridrowsincludedinsearch==j),] <- apply(holdoutclassificationaccuracies, 2, function(x) sd(x, na.rm=TRUE))
+    holdoutaccuracies <- getprogrammaticprediction(dat1, predictors, nholdout)
+    outmean[which(gridrowsincludedinsearch==j),] <- apply(holdoutaccuracies, 2, function(x) mean(x, na.rm=TRUE))
+    outsd[which(gridrowsincludedinsearch==j),] <- apply(holdoutaccuracies, 2, function(x) sd(x, na.rm=TRUE))
     }
 
     # clustering tendency

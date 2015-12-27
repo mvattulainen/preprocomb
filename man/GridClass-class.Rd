@@ -18,5 +18,7 @@ combinations faster.
 \item{\code{grid}}{(data frame) preprocessor combinations}
 
 \item{\code{data}}{(list) DataClass objects}
+
+\item{\code{validation}}{(data frame) validation results}
 }}
 

@@ -28,14 +28,13 @@ Mode <- function(x) {
 
 is.odd <- function(x) x %% 2 != 0
 
-range01 <- function(y){
-  newrange <- (y-min(y))/(max(y)-min(y))
+# Extract validation results
+
+extract <- function(x){
+  row <- c(variance=x@variance, finite=x@finite, completeobs=x@completeobs, classbalance=x@classbalance, ntopratiotwoplus=x@ntopratiotwoplus, mindimensions=x@mindimensions)
 }
 
-meanimpute_aux <- function(x){
-  x[is.na(x)] <- mean(x, na.rm=TRUE) #convert the item with NA to median value from the column
-  x
-  }
+
 
 #globalVariables(c("result","combinationevaluation", "predictor", "skewness"))
 

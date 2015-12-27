@@ -2,7 +2,7 @@ Package: preprocomb
 Type: Package
 Title: Tools for Preprocessing Combinations
 Version: 0.2.0
-Date: 2015-11-12
+Date: 2015-12-27
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
 Description: Preprocessing is often the most time-consuming phase in knowledge
@@ -15,21 +15,21 @@ Description: Preprocessing is often the most time-consuming phase in knowledge
     imputation, scaling, outlier removal, noise smoothing, feature selection and
     class imbalance correction.
 License: GPL-2
-Imports: 
+Imports:
     DMwR,
     randomForest,
     caret,
-    caretEnsemble,
     clustertend,
     stats,
     e1071,
     methods,
     utils,
-    arules
+    arules,
+    zoo
 LazyData: TRUE
 URL: https://github.com/mvattulainen/preprocomb
 BugReports: https://github.com/mvattulainen/preprocomb/issues
-Collate: 
+Collate:
     '00Utils.R'
     '01DataClass.R'
     '02PhaseClass.R'
@@ -39,6 +39,6 @@ Collate:
     '06PreProCombClass.R'
     '07AnalysisComponent.R'
     '08DefaultPreprocessorsAndPhases.R'
-Suggests: 
+Suggests:
     kernlab,
     testthat

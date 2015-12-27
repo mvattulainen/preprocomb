@@ -4,12 +4,14 @@
 \alias{setgrid}
 \title{setgrid}
 \usage{
-setgrid(phases, data)
+setgrid(phases, data, diagnostics = TRUE)
 }
 \arguments{
 \item{phases}{(character) vector of phases}
 
 \item{data}{(data frame)}
+
+\item{diagnostics}{(logical) run testpreprocessor(), defaults to TRUE}
 }
 \value{
 a GridClass object
@@ -23,6 +25,6 @@ data sets for each combination. setgrid initializes a GridClass object.
 If there are missing value, imputation phase must be set as first phase.
 }
 \examples{
-## grid <- setgrid(phases=c("outlier", "selection"), data=iris)
+## grid <- setgrid(phases=c("outliers", "selection"), data=iris)
 }
 
