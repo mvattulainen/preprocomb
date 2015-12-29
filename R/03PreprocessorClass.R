@@ -38,17 +38,14 @@ setGeneric("transformdata", function(object, dataobject) {
 #' for removing rows that have missing values. An operation can process either only the numeric
 #' columns or also the class label column.
 #'
-#' If an operation utilizes class labels or deletes rows from numeric columns, mode="all" must be
-#' used and it must return a DataClass object.
-#'
 #' @param classname (character)
 #' @param operation (expression as character string)
-#' @return NULL, definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
-#' @examples
-#' ## Set of examples using only numeric variables and no class labels
-#' ## setpreprocessor("naomit", "na.omit(basedata)")
-#' @details The user-defined S4 class definitions are stored in global environment and thus the
-#' function can not be used from an other package.
+#' @return NULL, side-effect: definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
+#' @details The user-defined S4 class definitions are stored in global environment and thus the function can not be used from an other package.
+#'
+#' scaleexample <- function(dataobject) dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@@x), dataobject@@y))
+#' setpreprocessor("scaleexample", "scaleexample(dataobject)")
+#'
 #' @export
 
 setpreprocessor <- function(classname, operation){
@@ -66,54 +63,25 @@ setpreprocessor <- function(classname, operation){
 }
 
 
-
-interactiveprediction <- function(object, predictor, nholdout){
-
-  tryCatch({
-
-    data <- object@data
-    data <- data.frame(data@x, y=data@y)
-    con <- numeric(nholdout)
-    fitControl <- caret::trainControl(method = "boot", repeats=2)
-
-    for (i in 1:nholdout){
-
-      training <- caret::createDataPartition(data$y, times=1, list=FALSE, p=0.66)[,1]
-
-      intrain <- data[training,]
-      intest <- data[-training,]
-
-      model <- caret::train(y ~., data=intrain, method=predictor, trControl = fitControl)
-      prediction <- as.data.frame(predict(model, newdata=intest))
-      con[i] <- mean(as.character(prediction[,1])==as.character(intest$y))
-
-    }
-
-    con <- mean(con)
-
-  }, error= function(e) return(NA) )
-
-}
-
 #' prepro
 #'
 #' prepro is the main function for interactive use. It takes data, transforms it according to the given
 #' preprocessor and computes statistics of the transformed data. The main use case is the chaining of
 #' the preprocessors as show in the examples below.
 #'
-#' @param classname (character) name of preprocessor (i.e. PreprocessorClass sub class as defined by setpreprocessor())
+
 #' @param dataobject (sub class/ data frame/ DataClass) object
+#' @param classname (character) name of preprocessor (i.e. PreprocessorClass sub class as defined by setpreprocessor())
 #' @param model (character) caret model name, note: the required model library must be attached, defaults to "knn"
 #' @param nholdout (integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to two
-#' @param nsharehopkins (integer) denominator for sample size for hopkins statistics, defauls to three  (n=nrow(data)/3)
 #' @return object of PreprocessorClass sub class
 #' @examples
 #' ## a <- prepro(iris, "basicscale")
 #' ## b <- prepro(a, "rfselect75")
-#' ## d <- prepro(iris, "scale", "rf", 20, 2, 10)
+#' ## d <- prepro(iris, "basicscale", "rf", 20)
 #' @export
 
-prepro <- function(dataobject, classname, model="knn", nholdout=2, nsharehopkins=3){
+prepro <- function(dataobject, classname, model="knn", nholdout=2){
 
   predictor <- model
 
@@ -138,9 +106,17 @@ prepro <- function(dataobject, classname, model="knn", nholdout=2, nsharehopkins
 
   subclassobject@data <- validatedata(transformeddata)
 
-  subclassobject@classificationaccuracy <- suppressWarnings(interactiveprediction(subclassobject, predictor, nholdout))
+  #subclassobject@classificationaccuracy <- suppressWarnings(interactiveprediction(subclassobject, predictor, nholdout))
 
-  subclassobject@hopkinsstatistic <- unname(unlist(clustertend::hopkins((subclassobject@data)@x, n=as.integer(nrow((subclassobject@data)@x)/nsharehopkins)   )))
+  data <- subclassobject@data
+  temp <- data.frame(x=data@x, y=data@y)
+  temp <- getprogrammaticprediction(temp, predictor, nholdout)
+  temp <- apply(temp, 2, mean)[1]
+  subclassobject@classificationaccuracy <- temp
+
+
+  temp <- clustertend::hopkins(data@x, n=nrow(data@x)-1)
+  subclassobject@hopkinsstatistic <- unname(unlist(temp))
 
   orh_score <- suppressMessages(DMwR::outliers.ranking((subclassobject@data)@x))
   orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
@@ -176,7 +152,7 @@ setMethod("show", signature(object = "PreprocessorClass"), function(object){
 #' getpreprocessors
 #'
 #' gets the available preprocessors, that is: PreprocessorClass (sub) classes.
-#' Shown preprocessors can be used by functions prc() and setphase().
+#' Shown preprocessors can be used by functions prepro() and setphase().
 #' @export
 
 getpreprocessors <- function() {names(getClass("PreprocessorClass")@subclasses)}

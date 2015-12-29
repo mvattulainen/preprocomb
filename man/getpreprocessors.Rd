@@ -8,6 +8,6 @@ getpreprocessors()
 }
 \description{
 gets the available preprocessors, that is: PreprocessorClass (sub) classes.
-Shown preprocessors can be used by functions prc() and setphase().
+Shown preprocessors can be used by functions prepro() and setphase().
 }
 

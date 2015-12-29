@@ -4,8 +4,7 @@
 \alias{prepro}
 \title{prepro}
 \usage{
-prepro(dataobject, classname, model = "knn", nholdout = 2,
-  nsharehopkins = 3)
+prepro(dataobject, classname, model = "knn", nholdout = 2)
 }
 \arguments{
 \item{dataobject}{(sub class/ data frame/ DataClass) object}
@@ -15,8 +14,6 @@ prepro(dataobject, classname, model = "knn", nholdout = 2,
 \item{model}{(character) caret model name, note: the required model library must be attached, defaults to "knn"}
 
 \item{nholdout}{(integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to two}
-
-\item{nsharehopkins}{(integer) denominator for sample size for hopkins statistics, defauls to three  (n=nrow(data)/3)}
 }
 \value{
 object of PreprocessorClass sub class
@@ -29,6 +26,6 @@ the preprocessors as show in the examples below.
 \examples{
 ## a <- prepro(iris, "basicscale")
 ## b <- prepro(a, "rfselect75")
-## d <- prepro(iris, "scale", "rf", 20, 2, 10)
+## d <- prepro(iris, "basicscale", "rf", 20)
 }
 

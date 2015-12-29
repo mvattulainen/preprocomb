@@ -1,9 +1,9 @@
 #' @include 04GridClass.R
 NULL
 
-# getprogrammaticprediction
-
-#' getprogrammaticprediction output classification accuracy. This function is exported
+#' getprogrammaticprediction
+#'
+#' getprogrammaticprediction outputs classification accuracy. This function is exported
 #' to be used by package metaheur.
 #' @param preprocesseddataset (DataClass)
 #' @param predictors caret models

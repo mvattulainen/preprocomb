@@ -2,7 +2,7 @@ Package: preprocomb
 Type: Package
 Title: Tools for Preprocessing Combinations
 Version: 0.2.0
-Date: 2015-12-27
+Date: 2015-12-29
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
 Description: Preprocessing is often the most time-consuming phase in knowledge

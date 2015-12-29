@@ -2,8 +2,7 @@
 % Please edit documentation in R/05PredictionControlClass.R
 \name{getprogrammaticprediction}
 \alias{getprogrammaticprediction}
-\title{getprogrammaticprediction output classification accuracy. This function is exported
-to be used by package metaheur.}
+\title{getprogrammaticprediction}
 \usage{
 getprogrammaticprediction(preprocesseddataset, predictors, nholdout)
 }
@@ -15,7 +14,7 @@ getprogrammaticprediction(preprocesseddataset, predictors, nholdout)
 \item{nholdout}{number of holdout rounds}
 }
 \description{
-getprogrammaticprediction output classification accuracy. This function is exported
+getprogrammaticprediction outputs classification accuracy. This function is exported
 to be used by package metaheur.
 }
 

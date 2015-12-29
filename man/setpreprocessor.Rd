@@ -12,7 +12,7 @@ setpreprocessor(classname, operation)
 \item{operation}{(expression as character string)}
 }
 \value{
-NULL, definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
+NULL, side-effect: definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
 }
 \description{
 setpreprocessor is a constructor function for defining a preprocessor. The main
@@ -21,14 +21,9 @@ for removing rows that have missing values. An operation can process either only
 columns or also the class label column.
 }
 \details{
-If an operation utilizes class labels or deletes rows from numeric columns, mode="all" must be
-used and it must return a DataClass object.
+The user-defined S4 class definitions are stored in global environment and thus the function can not be used from an other package.
 
-The user-defined S4 class definitions are stored in global environment and thus the
-function can not be used from an other package.
-}
-\examples{
-## Set of examples using only numeric variables and no class labels
-## setpreprocessor("naomit", "na.omit(basedata)")
+scaleexample <- function(dataobject) dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@x), dataobject@y))
+setpreprocessor("scaleexample", "scaleexample(dataobject)")
 }
 
