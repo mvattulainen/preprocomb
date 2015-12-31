@@ -11,8 +11,6 @@ initializedataclassobject(data)
 }
 \description{
 initializedataclassobject is a function to construct a DataClass object.
-The main use case is to return a DataClass object from user-defined preprocessors
-in setpreprocessor()
 }
 \details{
 Argument 'data' must have only numeric columns and one factor column.

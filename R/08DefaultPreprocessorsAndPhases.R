@@ -260,4 +260,9 @@ outliers <- setphase("outliers", c("noaction", "orhoutlier"), FALSE)
 sampling <- setphase("imbalance", c("noaction", "oversample", "undersample"), FALSE) # add:  "smotesample"
 selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FALSE)
 
+#' preprodefault
+#'
+#' Default phases
+#' @details preprodefault object can be used as default phases for setgrid
+#' @export
 preprodefault <- c("imputation", "variance", "smoothing", "scaling", "outliers", "sampling", "selection")

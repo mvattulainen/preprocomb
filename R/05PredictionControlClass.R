@@ -8,6 +8,8 @@ NULL
 #' @param preprocesseddataset (DataClass)
 #' @param predictors caret models
 #' @param nholdout number of holdout rounds
+#' @details If model tuning fails, NA is returned as classification accuracy of a combination.
+#' If model fitting and prediction for holdout round fails, NA is returned for the holdout round.
 #' @export
 
 getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout){
@@ -17,14 +19,11 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
     ## TUNING MODEL PARAMETERS
 
     fitControl <- caret::trainControl(method="boot", number=2, savePredictions=TRUE)
-    training <- caret::createDataPartition(preprocesseddataset$y, times=1, list=FALSE, p=0.66)[,1]
-    intrain <- preprocesseddataset[training,]
-    intest <- preprocesseddataset[-training,]
 
     klist <- list()
     for (k in 1:length(predictors))
     {
-      mod <- caret::train(y ~., data=intrain, method=predictors[k], trControl=fitControl)
+      mod <- caret::train(y ~., data=preprocesseddataset, method=predictors[k], trControl=fitControl)
       klist <- c(klist, list(mod$bestTune))
     }
 
@@ -32,7 +31,6 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
 
 
     ## HOLDOUTS
-
 
     modelsresults <- data.frame(matrix(ncol=length(predictors)+1, nrow=nholdout))
 
@@ -43,20 +41,32 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
 
       for(m in 1:nholdout)
       {
+
         training <- caret::createDataPartition(preprocesseddataset$y, times=1, list=FALSE, p=0.66)[,1]
         intrain <- preprocesseddataset[training,]
+        rownames(intrain) <- make.names(rownames(intrain), unique = TRUE)
         intest <- preprocesseddataset[-training,]
+        rownames(intest) <- make.names(rownames(intest), unique = TRUE)
+
+        tryCatch({
         mod <- caret::train(y ~., data=intrain, method=predictors[l], tuneGrid=klist[[l]], trControl=trainControl(method="none"))
         prediction <- predict(mod, newdata=intest)
+
         holdoutresults[m] <- mean(prediction==intest$y)
-      }
+
+        }, error= function(e) return({holdoutresults[m] <- NA}) )
+
+        }
       modelsresults[,l] <- holdoutresults
     }
+
+    # add one column for mean of predictors
     modelsresults[,length(predictors)+1] <- apply(modelsresults, 1, function(x) mean(x, na.rm=TRUE))
 
-  }, error= function(e) return(NA) )
-
   return(modelsresults)
+
+}, error= function(e) return({modelsresults <- rep(NA, length(predictors)+1)} ))
+
 }
 
 gethopkins <- function(dat){

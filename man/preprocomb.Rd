@@ -9,7 +9,7 @@ preprocomb(models = "knn", gridclassobject, nholdout = 2,
   outlier = FALSE)
 }
 \arguments{
-\item{models}{(character) vector of models (names of models as defined in package caret), there must be an odd number of models}
+\item{models}{(character) vector of models (names of models as defined in package caret)}
 
 \item{gridclassobject}{(GridClass) object representing the grid of combinations}
 

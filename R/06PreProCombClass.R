@@ -25,7 +25,7 @@ setClass("PreProCombClass", representation(rawall="data.frame", catclassificatio
 #' classification accuracy, hopkins statistic and ORH outlier score. See also
 #' PreProCombClass.
 #
-#' @param models (character) vector of models (names of models as defined in package caret), there must be an odd number of models
+#' @param models (character) vector of models (names of models as defined in package caret)
 #' @param gridclassobject (GridClass) object representing the grid of combinations
 #' @param nholdout (integer) number of holdout rounds for predictive classification, must be two or more, defaults to two
 #' @param searchmethod (character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent
@@ -57,7 +57,6 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
 
   # prediction control: TO BE ELIMINATED
   if(class(predictors)!="character"){stop("The argument predictors must a character vector.")}
-  if(is.odd(length(predictors))!=TRUE){stop("The number of predictors must be an even number.")}
 
   if(class(gridclassobject)!="GridClass"){stop("The argument grid must be a GridClass object.")}
 
@@ -91,12 +90,14 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
 
   # raw categorical
 
+  if (predict==TRUE){
   tempout <- data.frame(out[[5]], out[[1]][ncol(out[[1]])])
   colnames(tempout)[ncol(tempout)] <- "ALL_MEAN"
   cutpoint <- quantile(tempout$ALL_MEAN, .80)
   tempout$target <- cut(tempout$ALL_MEAN, breaks=c(-Inf, cutpoint, Inf), labels=c("low", "high"))
   tempout <- tempout[,-(ncol(tempout)-1)]
   preprocombclassobject@catclassification <- tempout
+  }
 
   # by clustering tendency
 

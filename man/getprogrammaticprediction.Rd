@@ -17,4 +17,8 @@ getprogrammaticprediction(preprocesseddataset, predictors, nholdout)
 getprogrammaticprediction outputs classification accuracy. This function is exported
 to be used by package metaheur.
 }
+\details{
+If model tuning fails, NA is returned as classification accuracy of a combination.
+If model fitting and prediction for holdout round fails, NA is returned for the holdout round.
+}
 
