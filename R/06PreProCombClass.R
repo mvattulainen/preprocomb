@@ -60,6 +60,10 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
 
   if(class(gridclassobject)!="GridClass"){stop("The argument grid must be a GridClass object.")}
 
+  gridsearchtest <- nrow(gridclassobject@grid) < 11 & searchmethod=="grid"
+
+  if(gridsearchtest==TRUE) {stop("There must be more than 10 combinations to use grid search.")}
+
   supportedsearches <- c("exhaustive", "random", "grid")
   if (!searchmethod %in% supportedsearches) {stop("Argument 'search' must on one of the following: 'exhaustive', 'random', 'grid")}
 
@@ -73,7 +77,7 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
 
   # all classification accuracies
 
-  preproout <- data.frame(matrix(paste(round(as.matrix(out[[1]]),2), round(as.matrix(out[[2]]),2), sep="+-"), nrow=nrow(out[[1]])))
+  preproout <- data.frame(matrix(paste(format(round(as.matrix(out[[1]]),2),nsmall=2), format(round(as.matrix(out[[2]]),2),nsmall=2), sep="+-"), nrow=nrow(out[[1]])))
   colnames(preproout) <- c(predictors, "ALL_MEAN")
   preprocombclassobject@allclassification <- data.frame(as.data.frame(out[[5]]), preproout)
 
@@ -85,6 +89,9 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
   # raw data
 
   rawall <- data.frame(out[[5]], out[[1]], out[[2]], out[[3]], out[[4]])
+
+  ## ERROR HERE
+
   colnames(rawall)[(ncol(out[[5]])+1):ncol(rawall)] <- c(paste(c(predictors, "ALL_MEAN"), "Mean", sep=""), paste(c(predictors, "ALL_MEAN"), "SD", sep=""), "Hopkins", "Orh_skewness")
   preprocombclassobject@rawall <- rawall
 

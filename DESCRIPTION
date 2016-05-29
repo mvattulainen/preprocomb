@@ -2,7 +2,7 @@ Package: preprocomb
 Type: Package
 Title: Tools for Preprocessing Combinations
 Version: 0.2.0
-Date: 2016-1-1
+Date: 2016-5-28
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
 Description: Preprocessing is often the most time-consuming phase in knowledge
@@ -41,4 +41,7 @@ Collate:
     '08DefaultPreprocessorsAndPhases.R'
 Suggests:
     kernlab,
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -61,13 +61,13 @@ executepreprocessing <- function(grid, dataobject){
 
   for (rowingrid in 1:nrow(grid))
   {
-    out_preprocesseddatasets[rowingrid] <- initializedataslot(as.character(grid[rowingrid, firstcolumningrid]), dataobject) # first column of grid
+    out_preprocesseddatasets[[rowingrid]] <- initializedataslot(as.character(grid[rowingrid, firstcolumningrid]), dataobject) # first column of grid
 
     if (ncol(grid) > 1){
 
       for (columningrid in 2:ncol(grid))
       {
-        out_preprocesseddatasets[rowingrid] <- initializedataslot(as.character(grid[rowingrid,columningrid]), out_preprocesseddatasets[[rowingrid]]@data)
+        out_preprocesseddatasets[[rowingrid]] <- initializedataslot(as.character(grid[rowingrid,columningrid]), out_preprocesseddatasets[[rowingrid]]@data)
       }
 
     }

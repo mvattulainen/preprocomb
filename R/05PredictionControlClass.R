@@ -23,7 +23,7 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
     klist <- list()
     for (k in 1:length(predictors))
     {
-      mod <- caret::train(y ~., data=preprocesseddataset, method=predictors[k], trControl=fitControl)
+      mod <- suppressWarnings(caret::train(y ~., data=preprocesseddataset, method=predictors[k], trControl=fitControl))
       klist <- c(klist, list(mod$bestTune))
     }
 
@@ -119,12 +119,11 @@ combinationevaluation <- function(predictors, gridclassobject, nholdout, searchm
 
   # for each selected row in the grid
 
-  print(paste("Number of combinations in evaluation:", length(gridrowsincludedinsearch)))
   cat("Combination number in process:")
 
   for (j in gridrowsincludedinsearch)
   {
-    cat(" ",j,",", sep="")
+    cat(" ",j,"/",length(gridrowsincludedinsearch), sep="")
 
     dat <- grid@data[[j]]
     dat1 <- data.frame(y=dat@y, x=dat@x)

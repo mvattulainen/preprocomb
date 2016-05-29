@@ -1,0 +1,75 @@
+---
+title: "Preprocomb"
+author: "Markus Vattulainen"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Preprocomb}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Preprocessing is often the most time-consuming phase in knowledge
+discovery and preprocessing transformations interdependent in unexpected
+ways. This package helps to make preprocessing faster and more effective. It
+provides an S4 framework for creating and testing preprocessing combinations
+for classification, clustering and outlier detection. The framework supports
+user-defined and domain-specific preprocessors and preprocessing phases.
+Default preprocessors can be used for low variance removal, missing value
+imputation, scaling, outlier removal, noise smoothing, feature selection and
+class imbalance correction.
+
+## Test data
+
+Let's add contaminations to Iris-data to simulate data quality problems:
+
+```{r}
+set.seed(1)
+testdata <- iris
+testdata[,2] <- rnorm(150, testdata[,2], 1) # add noise to the second variable
+testdata[sample(1:150,20),3] <- sample(20:40,20, replace=TRUE) # add outliers to the third
+testdata$Irrelevant <- runif(150, 0, 1) # add an irrelevant feature
+testdata <- testdata[1:110,] # add class imbalance
+```
+
+## Interactive mode
+
+In the interactive mode we can apply preprocessing techniques in sequence and
+see the end result on classification accuracy. In the below the data is first
+scaled and then outliers removed with Orh-algorithm. K-nearest neighbour is 
+the default classifier.
+
+
+```{r, messages=FALSE, warnings=FALSE}
+library(preprocomb)
+step1 <- prepro(testdata, "basicscale")
+step2 <- prepro(step1, "orhoutlier")
+step2
+```
+
+## Programmatic mode
+
+In the programmatic mode we can search for the best combinations by first setting
+the grid of combinations and the evaluating each combination. In the example below
+the preprocessing pipeline consists scaling and outlier removal techniques.
+
+```{r, messages=FALSE, warnings=FALSE}
+grid <- setgrid(phases=c("scaling", "outliers"), data=testdata)
+result <- preprocomb(grid=grid, nholdout=2)
+result@allclassification
+```
+
+## Default options
+
+The package is intended to be used with domain specific preprocessing phases and 
+techniques. There are however a set of default options available. Phases:
+
+- imputation, missing value imputation
+- variance, low variance removal
+- smoothing, noise smoothing
+- scaling, value range scaling 
+- outliers, outlier removal
+- sampling, class imbalance corrections
+- selection, irrelevant feature selection
+
+Each of the phases has two or more preprocessing techniques.
