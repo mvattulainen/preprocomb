@@ -211,7 +211,7 @@ setpreprocessor("undersample", "undersample(dataobject)")
 #  dataobject <- initializedataclassobject(newData)
 #}
 
-setpreprocessor("smotesample", "smotesample(dataobject)")
+#setpreprocessor("smotesample", "smotesample(dataobject)")
 
 ## FEATURE SELECTION
 
@@ -260,9 +260,10 @@ outliers <- setphase("outliers", c("noaction", "orhoutlier"), FALSE)
 sampling <- setphase("imbalance", c("noaction", "oversample", "undersample"), FALSE) # add:  "smotesample"
 selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FALSE)
 
-#' preprodefault
+#' seven default phases with preprocessing techniques
 #'
-#' Default phases
-#' @details preprodefault object can be used as default phases for setgrid
+#' Totals 3200 combinations. preprodefault object can be used as default phases for setgrid().
+#' @examples
+#' ## grid <- setgrid(preprodefault, iris)
 #' @export
 preprodefault <- c("imputation", "variance", "smoothing", "scaling", "outliers", "sampling", "selection")

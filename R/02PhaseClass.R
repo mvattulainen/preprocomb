@@ -5,10 +5,10 @@ NULL
 
 setClass("PhaseClass", representation(objectname="character", preprotransformations="list", preimpute="logical"))
 
-#' setphase
+#' constructor function for defining a preprocessing phase.
 #'
-#' setphase is a constructor function for defining a phase.
-#' setphases initializes a PhaseClass object.
+#' Preprocessing techniques defined with setpreprocessor() can be combined to a phase.
+#' Phases defined with setphase() can be combined to a grid of combinations with setgrid().
 #'
 #' @param phasename (character) name of the phase
 #' @param preprocessor (character) vector of preprocessors (see ?setpreprocessor) belonging to the phase

@@ -83,20 +83,23 @@ executepreprocessing <- function(grid, dataobject){
 
 ## GRID
 
-#' GridClass
+#' container for preprocessor combinations and preprocessed data sets.
 #'
-#' GridClass is a container for preprocessor combinations and the corresponding preprocessed data sets.
-#' GridClass is an interface for extending the system.
+#' Preprocessing techniques defined with setpreprocessor() can be combined to a phase.
+#' Phases defined with setphase() can be combined to a grid of combinations with setgrid().
+#' The main programmatic use with preprocomb() takes a GridClass object as argument.
+#'
+#' GridClass is also an interface for extending the system to package 'metaheur', which takes
+#' a GridClass object to find near-optiomal combinations fast.
+#'
 #' @slot grid (data frame) preprocessor combinations
 #' @slot data (list) DataClass objects
 #' @slot validation (data frame) validation results
-#' @details Extensions can include approximate combinatorial optimization for finding near-best
-#' combinations faster.
 #' @export
 
 setClass("GridClass", representation(grid="data.frame", data="list", validation="data.frame"))
 
-#' setgrid
+#' constructor function for creating the combinations
 #'
 #' setgrid takes the preprocessing phases, which contain preprocessors and creates
 #' the combinations of them as a grid. It then computes and stores the transformed
@@ -107,8 +110,9 @@ setClass("GridClass", representation(grid="data.frame", data="list", validation=
 #' @param diagnostics (logical) run testpreprocessor(), defaults to TRUE
 #' @return a GridClass object
 #' @examples
-#' ## grid <- setgrid(phases=c("outliers", "selection"), data=iris)
-#' @details If there are missing value, imputation phase must be set as first phase.
+#' grid <- setgrid(phases=c("outliers", "selection"), data=iris)
+#' @details If there are missing values, imputation phase must be set as first phase.
+#' Default phase "sampling" can only be used with data, which has binary class labels.
 #' @export
 
 setgrid <- function(phases, data, diagnostics=TRUE){
@@ -117,6 +121,8 @@ setgrid <- function(phases, data, diagnostics=TRUE){
 if(class(phases)!="character"){stop("Argument 'phases' must be a character vector.")}
 if(class(data)!="data.frame"){stop("Argument 'data' must of a data frame.")}
 
+issamplingincluded <- "sampling" %in% phases
+
 phases <- as.list(phases)
 if(!all(lapply(phases, function(x) class(eval(as.name(x))))=="PhaseClass")){
 stop("All elements in argument 'phases' must point to PhaseClass objects.")}
@@ -124,6 +130,10 @@ stop("All elements in argument 'phases' must point to PhaseClass objects.")}
 # Initialize objects
 
 dataclassobject <- initializedataclassobject(data)
+
+hasmorethantwolevels <- length(levels(dataclassobject@y)) > 2
+
+if (issamplingincluded==TRUE & hasmorethantwolevels==TRUE) {stop("Default phase 'sampling' can only be used with data, which has binary class labels.")}
 
 gridclassobject <- new("GridClass")
 

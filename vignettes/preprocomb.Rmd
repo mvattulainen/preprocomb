@@ -34,14 +34,19 @@ testdata <- testdata[1:110,] # add class imbalance
 
 ## Interactive mode
 
-In the interactive mode we can apply preprocessing techniques in sequence and
+In the interactive mode we can apply preprocessing techniques in a sequence and
 see the end result on classification accuracy. In the below the data is first
 scaled and then outliers removed with Orh-algorithm. K-nearest neighbour is 
 the default classifier.
 
+```{r, include=FALSE, cache=FALSE}
+suppressMessages(library(ggplot2))
+suppressMessages(library(lattice))
+```
 
 ```{r, messages=FALSE, warnings=FALSE}
 library(preprocomb)
+
 step1 <- prepro(testdata, "basicscale")
 step2 <- prepro(step1, "orhoutlier")
 step2
@@ -51,11 +56,22 @@ step2
 
 In the programmatic mode we can search for the best combinations by first setting
 the grid of combinations and the evaluating each combination. In the example below
-the preprocessing pipeline consists scaling and outlier removal techniques.
+the preprocessing pipeline consists of scaling and outlier removal techniques.
 
 ```{r, messages=FALSE, warnings=FALSE}
 grid <- setgrid(phases=c("scaling", "outliers"), data=testdata)
 result <- preprocomb(grid=grid, nholdout=2)
+```
+
+There are slots that can be extracted:
+
+- rawall
+- allclassification
+- bestclassification
+- allclustering
+- alloutliers
+
+```{r, messages=FALSE, warnings=FALSE}
 result@allclassification
 ```
 
@@ -72,4 +88,43 @@ techniques. There are however a set of default options available. Phases:
 - sampling, class imbalance corrections
 - selection, irrelevant feature selection
 
-Each of the phases has two or more preprocessing techniques.
+Each of the phases has two or more preprocessing techniques. Available preprocessing
+techniques can be shown by:
+
+```{r, messages=FALSE, warnings=FALSE}
+getpreprocessor()
+```
+
+and function definition by giving the name of preprocessing technique as argument:
+
+```{r, messages=FALSE, warnings=FALSE}
+getpreprocessor("basicscale")
+```
+
+
+## Customization 
+
+Preproccessing techniques can be added to the system in two steps:
+
+Step 1: Function definition
+
+```{r, messages=FALSE, warnings=FALSE}
+scaleexample <- function(dataobject) {
+dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@x), y=dataobject@y))
+}
+```
+
+Notice that new functions must return a DataClass object. 
+
+Step 2: Adding of the function to the system
+
+```{r, messages=FALSE, warnings=FALSE}
+setpreprocessor("scaleexample", "scaleexample(dataobject)")
+```
+
+and defined preprocessing techniques can be added to phases:
+
+```{r, messages=FALSE, warnings=FALSE}
+newscalingphase <- setphase("newscaling", c("scaleexample"), TRUE)
+```
+

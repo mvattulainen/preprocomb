@@ -16,6 +16,9 @@ NULL
 #' @importFrom utils tail head
 NULL
 
+#'@import foreach
+NULL
+
 ## FUNCTIONS
 
 # Mode for VOTE
@@ -34,6 +37,13 @@ extract <- function(x){
   row <- c(variance=x@variance, finite=x@finite, completeobs=x@completeobs, classbalance=x@classbalance, ntopratiotwoplus=x@ntopratiotwoplus, mindimensions=x@mindimensions)
 }
 
+# ENVIRONMENT FOR STORING PREPRECESSOR DEFINITIONS
+
+#' environment for storing preprocessor definitions
+#'
+#' an environment to get the preprocessing technique function bodies
+#' @export
+preprocessordefinitionstorage <- new.env()
 
 
 #globalVariables(c("result","combinationevaluation", "predictor", "skewness"))

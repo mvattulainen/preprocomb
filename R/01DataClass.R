@@ -32,15 +32,16 @@ validatedata <- function(object){
 
 }
 
-#' initializedataclassobject
+#' initialize a DataClass object
 #'
-#' initializedataclassobject is a function to construct a DataClass object.
-#'
+#' initializedataclassobject is used when new preprocessing techniques are added to the
+#' system by the user. Added preprocessing techniques (i.e. functions) must return a
+#' DataClass object.
 #' @param data (data.frame)
 #' @details Argument 'data' must have only numeric columns and one factor column.
 #' @export
 #' @examples
-#' ## dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@@x), dataobject@@y))
+#' ## dataobject <- initializedataclassobject(iris)
 
 initializedataclassobject <- function(data){
 

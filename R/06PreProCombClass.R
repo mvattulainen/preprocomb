@@ -3,10 +3,14 @@ NULL
 
 # setOldClass("C5.0")
 
-#' PreProCombClass
+
+
+#' container for combination evaluation
 #'
-#' PreproCombClass is a container for output of executing preprocomb function.
-#' It is an interface for extension of the system.
+#' This class implements the separation of data used for
+#' analysis and analysis of the data. The latter can include
+#' computation of association rules as in showrules().
+#'
 #' @slot rawall (data frame) all results
 #' @slot catclassification (data frame) classification accuracy categorized, "high" is more than 80 percent quantile value
 #' @slot allclassification (data frame) classification accuracy, means and standard deviations
@@ -19,26 +23,26 @@ NULL
 
 setClass("PreProCombClass", representation(rawall="data.frame", catclassification="data.frame", allclassification="data.frame", bestclassification="data.frame", allclustering="data.frame", bestclustering="data.frame", alloutliers="data.frame"))
 
-#' preprocomb
+#' the MAIN function of programmatic use.
 #'
-#' preprocomb the main function of programmatic use. It executes the computation of
-#' classification accuracy, hopkins statistic and ORH outlier score. See also
-#' PreProCombClass.
+#' preprocomb executes the computation of classification accuracy, hopkins statistic and ORH outlier score.
+#' An alternative to preprocomb is to use package 'metaheur' for faster finding of near-optimal combinations.
 #
-#' @param models (character) vector of models (names of models as defined in package caret)
+#' @param models (character) vector of models (names of models as defined in package caret), defaults to "knn"
 #' @param gridclassobject (GridClass) object representing the grid of combinations
 #' @param nholdout (integer) number of holdout rounds for predictive classification, must be two or more, defaults to two
 #' @param searchmethod (character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent
 #' @param predict (boolean) compute predictions, defaults to TRUE
 #' @param cluster (boolean) compute clustering tendency, defaults to FALSE
 #' @param outlier (boolean) compute outlier tendency, defaults to FALSE
+#' @param cores (integer) number of cores used in parallel processing of holdout rounds, defaults to 1
 #' @return a PreProCombClass object
 #' @details caret messages will be displayed during processing
 #' @examples
 #' ## modifiediris <- droplevels(iris[-c(1:60),])
 #' ## grid <- setgrid(phases=c("outliers", "scaling"), data=modifiediris)
 #' ## library(kernlab)
-#' ## result <- preprocomb(models=c("svmRadial"), grid=grid, nholdout=2, search="exhaustive")
+#' ## result <- preprocomb(models=c("svmRadial"), grid=grid, nholdout=1, search="grid")
 #' ## result@@allclassification
 #' ## result@@allclustering
 #' ## result@@alloutliers
@@ -48,10 +52,12 @@ setClass("PreProCombClass", representation(rawall="data.frame", catclassificatio
 #' ## newphases <- c("outlier", "smoothing", "scaling", "selection", "sampling")
 #' ## newmodels <- c("knn", "rf", "svmRadial")
 #' ## grid1 <- setgrid(phases=newphases, data=modifiediris)
-#' ## result1 <- preprocomb(models=newmodels, grid=grid1, nholdout=2, search="grid")
+#' ## result1 <- preprocomb(models=newmodels, grid=grid1, nholdout=1, search="grid")
 #' @export
 
-preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="exhaustive", predict=TRUE, cluster=FALSE, outlier=FALSE){
+preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="exhaustive", predict=TRUE, cluster=FALSE, outlier=FALSE, cores=1){
+
+  doParallel::registerDoParallel(cores=cores)
 
   predictors <- models
 
@@ -60,9 +66,9 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
 
   if(class(gridclassobject)!="GridClass"){stop("The argument grid must be a GridClass object.")}
 
-  gridsearchtest <- nrow(gridclassobject@grid) < 11 & searchmethod=="grid"
+  gridsearchtest <- nrow(gridclassobject@grid) < 11 & searchmethod %in% c("grid", "random")
 
-  if(gridsearchtest==TRUE) {stop("There must be more than 10 combinations to use grid search.")}
+  if(gridsearchtest==TRUE) {stop("There must be more than 10 combinations to use grid or random search.")}
 
   supportedsearches <- c("exhaustive", "random", "grid")
   if (!searchmethod %in% supportedsearches) {stop("Argument 'search' must on one of the following: 'exhaustive', 'random', 'grid")}
@@ -90,8 +96,6 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
 
   rawall <- data.frame(out[[5]], out[[1]], out[[2]], out[[3]], out[[4]])
 
-  ## ERROR HERE
-
   colnames(rawall)[(ncol(out[[5]])+1):ncol(rawall)] <- c(paste(c(predictors, "ALL_MEAN"), "Mean", sep=""), paste(c(predictors, "ALL_MEAN"), "SD", sep=""), "Hopkins", "Orh_skewness")
   preprocombclassobject@rawall <- rawall
 
@@ -116,6 +120,8 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
   # by outliers
 
   preprocombclassobject@alloutliers <- data.frame(out[[5]], Orh_skewness=round(out[[4]],2))
+
+  doParallel::stopImplicitCluster()
 
   return(preprocombclassobject)
 }

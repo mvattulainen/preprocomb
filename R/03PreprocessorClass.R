@@ -3,9 +3,8 @@ NULL
 
 # SUBCLASSES =================================================
 
-#' PreprocessorClass
+#' an abstract class from which concrete preprocessor (sub) classes are inhereted.
 #'
-#' PreprocessorClass is an abstract class from which concrete preprocessor (sub) classes are inhereted.
 #' Inheritance is controlled by setpreprocessor() function.
 #'
 #' @slot objectname (character) object name
@@ -22,7 +21,7 @@ setClass("PreprocessorClass", representation(objectname="character", objectopera
 #' transformdata
 #'
 #' transformdata is a generic function. Its methods are defined by setpreprocessor().
-#' The function is intented for package internal use.
+#' The function is intented for package internal use, but exported so that classes can be inhereted from it.
 #' @param object (PreprocessorClass) object
 #' @param dataobject (DataClass/data frame) object
 #' @export
@@ -31,12 +30,14 @@ setGeneric("transformdata", function(object, dataobject) {
   standardGeneric("transformdata")
 })
 
-#' setpreprocessor
+#' constructor function for adding a new preprocessing technique to the system
 #'
-#' setpreprocessor is a constructor function for defining a preprocessor. The main
-#' argument is the operation that is executed to transform the data such as "na.omit(basedata)"
+#' The main argument is the operation that is executed to transform the data such as "na.omit(basedata)"
 #' for removing rows that have missing values. An operation can process either only the numeric
 #' columns or also the class label column.
+#'
+#' Preprocessing techniques defined with setpreprocessor() can be combined to a phase.
+#' Phases defined with setphase() can be combined to a grid of combinations with setgrid().
 #'
 #' @param classname (character)
 #' @param operation (expression as character string)
@@ -49,6 +50,11 @@ setGeneric("transformdata", function(object, dataobject) {
 #' @export
 
 setpreprocessor <- function(classname, operation){
+
+  storagepositition <- paste("preprocessordefinitionstorage$", classname, sep="")
+  funcbody <- as.character(eval(parse(text=paste("body(", gsub( "\\(.*$", "", operation ), ")", sep=""))))
+  storagesaving <- paste(storagepositition, "<-'", paste(funcbody, collapse=""), "'", sep="")
+  eval <- eval(parse(text=storagesaving))
 
   setClass(classname, contains="PreprocessorClass", where=topenv(parent.frame()), prototype=prototype(objectname=classname, objectoperation=operation))
 
@@ -63,25 +69,26 @@ setpreprocessor <- function(classname, operation){
 }
 
 
-#' prepro
+#' the MAIN function for interactive use.
 #'
-#' prepro is the main function for interactive use. It takes data, transforms it according to the given
-#' preprocessor and computes statistics of the transformed data. The main use case is the chaining of
-#' the preprocessors as show in the examples below.
-#'
+#' prepro takes data, transforms it according to the given preprocessor and computes statistics of the
+#' transformed data. The main use case is the chaining of the preprocessors as show in the examples below.
 
 #' @param dataobject (sub class/ data frame/ DataClass) object
 #' @param classname (character) name of preprocessor (i.e. PreprocessorClass sub class as defined by setpreprocessor())
 #' @param model (character) caret model name, note: the required model library must be attached, defaults to "knn"
-#' @param nholdout (integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to two
+#' @param nholdout (integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to 2
+#' @param cores (integer) number of cores used in parallel processing of holdout rounds, default to 1
 #' @return object of PreprocessorClass sub class
 #' @examples
 #' ## a <- prepro(iris, "basicscale")
 #' ## b <- prepro(a, "rfselect75")
-#' ## d <- prepro(iris, "basicscale", "rf", 20)
+#' ## d <- prepro(iris, "basicscale", "rf", nholdout=20, cores=2)
 #' @export
 
-prepro <- function(dataobject, classname, model="knn", nholdout=2){
+prepro <- function(dataobject, classname, model="knn", nholdout=2, cores=1){
+
+  doParallel::registerDoParallel(cores)
 
   predictor <- model
 
@@ -122,6 +129,8 @@ prepro <- function(dataobject, classname, model="knn", nholdout=2){
   orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
   subclassobject@ORHskewness <- e1071::skewness(orh_rank)
 
+  doParallel::stopImplicitCluster()
+
   return(subclassobject)
 
 }
@@ -149,23 +158,39 @@ setMethod("show", signature(object = "PreprocessorClass"), function(object){
 
 ### BASETEST ==========
 
-#' getpreprocessors
+#' gets preprocessor definition
 #'
-#' gets the available preprocessors, that is: PreprocessorClass (sub) classes.
+#' @param preprocessor (character) name of preprocessor, defaults to NULL for list of all preprocessors
+#' get preprocessor technique function body defined with setpreprocessor().
 #' Shown preprocessors can be used by functions prepro() and setphase().
+#' @examples
+#' getpreprocessor()
+#' getpreprocessor("basicscale")
 #' @export
 
-getpreprocessors <- function() {names(getClass("PreprocessorClass")@subclasses)}
+getpreprocessor <- function(preprocessor=NULL)   {
 
-#' testpreprocessors
+  if (is.null(preprocessor)) {names(getClass("PreprocessorClass")@subclasses)}
+  else {
+    getdef <- paste("preprocessordefinitionstorage$",preprocessor)
+    defres <- eval(parse(text=getdef))
+    writeLines(defres)
+  }
+
+}
+
+#' test preprocessing techniques against data
 #'
-#' run a test for preprocessors
+#' Intended to be used when adding new preprocessing techniques with setpreprocessor().
+#'
 #' @param preprocessors (character) vector of preprocessors, by default gets all preprocessors with getpreprocessors()
 #' @param data (data frame) to be tested against, defaults to random data frame without missing values
+#' @examples
+#' testpreprocessors()
 #' @export
 
 testpreprocessors <- function(preprocessors=NULL, data=NULL){
-  if (is.null(preprocessors)) {preprocessors <- getpreprocessors() }
+  if (is.null(preprocessors)) {preprocessors <- getpreprocessor() }
   if (is.null(data)) {data <- data.frame(matrix(rbinom(4*30, 1, .5), ncol=4), class=sample(letters[1:2], 30, replace=TRUE))}
   cls <- as.list(preprocessors)
   testdata <- initializedataclassobject(data)

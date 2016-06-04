@@ -1,10 +1,10 @@
 #' @include 04GridClass.R
 NULL
 
-#' getprogrammaticprediction
+#' parallel computation of classification accuracy holdout rounds
 #'
-#' getprogrammaticprediction outputs classification accuracy. This function is exported
-#' to be used by package metaheur.
+#' This function is used internally and exported for package 'metaheur'.
+#'
 #' @param preprocesseddataset (DataClass)
 #' @param predictors caret models
 #' @param nholdout number of holdout rounds
@@ -21,10 +21,12 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
     fitControl <- caret::trainControl(method="boot", number=2, savePredictions=TRUE)
 
     klist <- list()
+    packagevector <- character()
     for (k in 1:length(predictors))
     {
       mod <- suppressWarnings(caret::train(y ~., data=preprocesseddataset, method=predictors[k], trControl=fitControl))
       klist <- c(klist, list(mod$bestTune))
+      packagevector <- c(packagevector, mod$modelInfo$library[1])
     }
 
     if (length(predictors)!=length(klist)) stop("One of the selected models does not have tuning parameters.")
@@ -37,10 +39,12 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
     for (l in 1:length(predictors))
     {
 
-      holdoutresults <- numeric()
+      #holdoutresults <- numeric()
 
-      for(m in 1:nholdout)
-      {
+      holdoutaccuracy <- foreach::foreach(j=1:nholdout, .combine='c', .packages=c('caret', packagevector)) %dopar% {
+
+      #for(m in 1:nholdout)
+      #{
 
         training <- caret::createDataPartition(preprocesseddataset$y, times=1, list=FALSE, p=0.66)[,1]
         intrain <- preprocesseddataset[training,]
@@ -52,12 +56,14 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
         mod <- caret::train(y ~., data=intrain, method=predictors[l], tuneGrid=klist[[l]], trControl=trainControl(method="none"))
         prediction <- predict(mod, newdata=intest)
 
-        holdoutresults[m] <- mean(prediction==intest$y)
+        #holdoutresults[m] <- mean(prediction==intest$y)
 
-        }, error= function(e) return({holdoutresults[m] <- NA}) )
+        holdoutaccuracy <- mean(prediction==intest$y)
+
+        }, error= function(e) return({holdoutaccuracy <- NA}) )
 
         }
-      modelsresults[,l] <- holdoutresults
+      modelsresults[,l] <- mean(holdoutaccuracy)
     }
 
     # add one column for mean of predictors
@@ -82,14 +88,22 @@ getorh <- function(dat){
 gridrowsinsearch <- function(searchmethod, grid){
 
   # Optimization method
-  if (searchmethod=="exhaustive") {preproseq <- seq(1, nrow(grid@grid), 1)}
-  if (searchmethod=="random") {preproseq <- sample(1:nrow(grid@grid), as.integer(nrow(grid@grid)/5))}
+  if (searchmethod=="exhaustive") {
+    preproseq <- seq(1, nrow(grid@grid), 1)}
+  if (searchmethod=="random") {
+    preproseq <- sample(1:nrow(grid@grid), as.integer(0.2*(nrow(grid@grid))))
+    preproseq <- preproseq[order(preproseq)]}
   if (searchmethod=="grid") {
-    preproseq <- as.list(seq(1, nrow(grid@grid), by=as.integer(nrow(grid@grid)/(nrow(grid@grid)/10))))
-    preproseq <- unlist(lapply(preproseq, function(x) x+sample(0:2, 1)))
-  }
+    teninterval <- floor(nrow(grid@grid)/10)
+    preproseq <- seq(1, nrow(grid@grid), teninterval)}
+    #seteverytenth <- as.integer(nrow(grid@grid)/(nrow(grid@grid)/10))
+    #preproseq <- as.list(seq(1, nrow(grid@grid), by=seteverytenth))
+    #preproseq <- unlist(lapply(preproseq, function(x) x+sample(0:2, 1)))
+
   return(preproseq)
 }
+
+
 
 ## PREDICTION ================================================
 

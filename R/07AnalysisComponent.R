@@ -1,9 +1,8 @@
 #' @include 06PreProCombClass.R
 NULL
 
-#' showrules
+#' shows association rules for classification accuracy.
 #'
-#' showrules shows association rules for classification accuracy.
 #' Classification accuracy label  'high' corresponds to best twenty
 #' percent and 'low' for the rest.
 
