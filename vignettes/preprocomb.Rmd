@@ -29,7 +29,7 @@ testdata <- iris
 testdata[,2] <- rnorm(150, testdata[,2], 1) # add noise to the second variable
 testdata[sample(1:150,20),3] <- sample(20:40,20, replace=TRUE) # add outliers to the third
 testdata$Irrelevant <- runif(150, 0, 1) # add an irrelevant feature
-testdata <- testdata[1:110,] # add class imbalance
+testdata <- droplevels(testdata[1:70,]) # add class imbalance
 ```
 
 ## Interactive mode
@@ -56,11 +56,12 @@ step2
 
 In the programmatic mode we can search for the best combinations by first setting
 the grid of combinations and the evaluating each combination. In the example below
-the preprocessing pipeline consists of scaling and outlier removal techniques.
+the preprocessing pipeline consists 3200 combinations and their evaluation. The
+evaluation took 2 hours on Intel Celeron 1.4 GHz and two cores. 
+```{r, messages=FALSE, warnings=FALSE, eval=FALSE}
+examplegrid <- setgrid(phases=preprodefault, data=testdata)
+exampleresult <- preprocomb(grid=examplegrid, nholdout=4, cores=2)
 
-```{r, messages=FALSE, warnings=FALSE}
-grid <- setgrid(phases=c("scaling", "outliers"), data=testdata)
-result <- preprocomb(grid=grid, nholdout=2)
 ```
 
 There are slots that can be extracted:
@@ -72,7 +73,7 @@ There are slots that can be extracted:
 - alloutliers
 
 ```{r, messages=FALSE, warnings=FALSE}
-result@allclassification
+exampleresult@bestclassification
 ```
 
 ## Default options

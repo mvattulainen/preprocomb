@@ -48,3 +48,10 @@ preprocessordefinitionstorage <- new.env()
 
 #globalVariables(c("result","combinationevaluation", "predictor", "skewness"))
 
+#' preprocomb example
+#'
+#' An example grid object made of modified Iris-data with 3200 combinations \cr
+#' evaluated with knn classifier classification accuracy and four holdrounds for each.
+#'
+#' @format A PreProCombClass object
+"exampleresult"

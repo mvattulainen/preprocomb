@@ -1,8 +1,8 @@
 Package: preprocomb
 Type: Package
 Title: Tools for Preprocessing Combinations
-Version: 0.2.0
-Date: 2016-6-1
+Version: 0.3.0
+Date: 2016-6-18
 Author: Markus Vattulainen
 Maintainer: Markus Vattulainen <markus.vattulainen@gmail.com>
 Description: Preprocessing is often the most time-consuming phase in knowledge
@@ -15,6 +15,8 @@ Description: Preprocessing is often the most time-consuming phase in knowledge
     imputation, scaling, outlier removal, noise smoothing, feature selection and
     class imbalance correction.
 License: GPL-2
+Depends:
+    R (>= 2.10)
 Imports:
     DMwR,
     randomForest,

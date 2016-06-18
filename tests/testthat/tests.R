@@ -1,4 +1,6 @@
 
+library(preprocomb)
+
 modifiediris <- droplevels(iris[-c(1:60),])
 
 ## Test DataClass
@@ -23,7 +25,7 @@ expect_is(testgrid, "GridClass")
 
 ## Preprocombclass
 
-testcomb <- preprocomb(gridclassobject=testgrid, models="knn", nholdout=1, predict=TRUE, cluster=FALSE, outlier=FALSE, search="exhaustive")
-expect_is(testcomb, "PreProCombClass")
+#testcomb <- preprocomb(gridclassobject=testgrid, models="knn", nholdout=1, predict=TRUE, cluster=FALSE, outlier=FALSE, search="exhaustive")
+#expect_is(testcomb, "PreProCombClass")
 
 
