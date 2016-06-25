@@ -4,12 +4,12 @@
 \alias{preprocomb}
 \title{the MAIN function of programmatic use.}
 \usage{
-preprocomb(models = "knn", gridclassobject, nholdout = 2,
+preprocomb(models = "rpart", gridclassobject, nholdout = 2,
   searchmethod = "exhaustive", predict = TRUE, cluster = FALSE,
   outlier = FALSE, cores = 1)
 }
 \arguments{
-\item{models}{(character) vector of models (names of models as defined in package caret), defaults to "knn"}
+\item{models}{(character) vector of models (names of models as defined in package caret), defaults to "rpart"}
 
 \item{gridclassobject}{(GridClass) object representing the grid of combinations}
 
@@ -46,7 +46,7 @@ caret messages will be displayed during processing
 ## result@rawall
 ## result@catclassification
 ##
-## newphases <- c("outlier", "smoothing", "scaling", "selection", "sampling")
+## newphases <- c("outliers", "smoothing", "scaling", "selection", "sampling")
 ## newmodels <- c("knn", "rf", "svmRadial")
 ## grid1 <- setgrid(phases=newphases, data=modifiediris)
 ## result1 <- preprocomb(models=newmodels, grid=grid1, nholdout=1, search="grid")

@@ -51,12 +51,18 @@ setGeneric("transformdata", function(object, dataobject) {
 
 setpreprocessor <- function(classname, operation){
 
+  # save operation to specific environment
+
   storagepositition <- paste("preprocessordefinitionstorage$", classname, sep="")
   funcbody <- as.character(eval(parse(text=paste("body(", gsub( "\\(.*$", "", operation ), ")", sep=""))))
   storagesaving <- paste(storagepositition, "<-'", paste(funcbody, collapse=""), "'", sep="")
   eval <- eval(parse(text=storagesaving))
 
+  # Create a subclass of PreprocessorClass
+
   setClass(classname, contains="PreprocessorClass", where=topenv(parent.frame()), prototype=prototype(objectname=classname, objectoperation=operation))
+
+  # Define tranformdata method for the subclass
 
   setMethod("transformdata", where=topenv(parent.frame()), signature(object = classname), function(object, dataobject) {
 
@@ -71,28 +77,33 @@ setpreprocessor <- function(classname, operation){
 
 #' the MAIN function for interactive use.
 #'
-#' prepro takes data, transforms it according to the given preprocessor and computes statistics of the
+#' prepro() takes data, transforms it according to the given preprocessor and computes statistics of the
 #' transformed data. The main use case is the chaining of the preprocessors as show in the examples below.
 
 #' @param dataobject (sub class/ data frame/ DataClass) object
 #' @param classname (character) name of preprocessor (i.e. PreprocessorClass sub class as defined by setpreprocessor())
-#' @param model (character) caret model name, note: the required model library must be attached, defaults to "knn"
+#' @param model (character) caret model name, note: the required model library must be attached, defaults to "rpart"
 #' @param nholdout (integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to 2
-#' @param cores (integer) number of cores used in parallel processing of holdout rounds, default to 1
+#' @param cores (integer) number of cores used in parallel processing of holdout rounds, defaults to 1
 #' @return object of PreprocessorClass sub class
 #' @examples
 #' ## a <- prepro(iris, "basicscale")
 #' ## b <- prepro(a, "rfselect75")
 #' ## d <- prepro(iris, "basicscale", "rf", nholdout=20, cores=2)
+#' @details If a data object has missing values, one of the imputation preprocessors must be applied first.
+
 #' @export
 
-prepro <- function(dataobject, classname, model="knn", nholdout=2, cores=1){
+
+prepro <- function(dataobject, classname, model="rpart", nholdout=2, cores=1){
 
   doParallel::registerDoParallel(cores)
 
   predictor <- model
 
   subclassobject <- new(classname)
+
+  # Preprocess data
 
   if (class(dataobject)=="DataClass") {
     transformeddata <- transformdata(subclassobject, dataobject)
@@ -110,10 +121,9 @@ prepro <- function(dataobject, classname, model="knn", nholdout=2, cores=1){
   }
 
   subclassobject@data <- transformeddata
-
   subclassobject@data <- validatedata(transformeddata)
 
-  #subclassobject@classificationaccuracy <- suppressWarnings(interactiveprediction(subclassobject, predictor, nholdout))
+  # Compute classification accuracy
 
   data <- subclassobject@data
   temp <- data.frame(x=data@x, y=data@y)
@@ -121,9 +131,12 @@ prepro <- function(dataobject, classname, model="knn", nholdout=2, cores=1){
   temp <- apply(temp, 2, mean)[1]
   subclassobject@classificationaccuracy <- temp
 
+  # Compute clustering tendency
 
   temp <- clustertend::hopkins(data@x, n=nrow(data@x)-1)
   subclassobject@hopkinsstatistic <- unname(unlist(temp))
+
+  # Compute outlier scores
 
   orh_score <- suppressMessages(DMwR::outliers.ranking((subclassobject@data)@x))
   orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
@@ -161,8 +174,10 @@ setMethod("show", signature(object = "PreprocessorClass"), function(object){
 #' gets preprocessor definition
 #'
 #' @param preprocessor (character) name of preprocessor, defaults to NULL for list of all preprocessors
-#' get preprocessor technique function body defined with setpreprocessor().
-#' Shown preprocessors can be used by functions prepro() and setphase().
+#'
+#' @details
+#' getpreprocessor with the name of the preprocessor shows preprocessing function body defined with setpreprocessor().\cr
+#' getpreprocessor without name shows all preprocessors that can be used by functions prepro() and setphase().
 #' @examples
 #' getpreprocessor()
 #' getpreprocessor("basicscale")

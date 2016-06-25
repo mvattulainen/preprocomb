@@ -23,9 +23,5 @@ expect_output(str(testpreprocessors(data=modifiediris)), numpreproccessors)
 testgrid <- setgrid(phases=c("outliers"), data=modifiediris)
 expect_is(testgrid, "GridClass")
 
-## Preprocombclass
-
-#testcomb <- preprocomb(gridclassobject=testgrid, models="knn", nholdout=1, predict=TRUE, cluster=FALSE, outlier=FALSE, search="exhaustive")
-#expect_is(testcomb, "PreProCombClass")
 
 

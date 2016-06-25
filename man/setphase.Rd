@@ -11,7 +11,7 @@ setphase(phasename, preprocessor, preimpute)
 
 \item{preprocessor}{(character) vector of preprocessors (see ?setpreprocessor) belonging to the phase}
 
-\item{preimpute}{(logical) whether phase is executed before missing value imputation}
+\item{preimpute}{(logical) whether phase is missing value imputation}
 }
 \value{
 a PhaseClass object
@@ -21,7 +21,8 @@ Preprocessing techniques defined with setpreprocessor() can be combined to a pha
 Phases defined with setphase() can be combined to a grid of combinations with setgrid().
 }
 \details{
-All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'.
+All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'. \cr
+If dataset contains missing values, missing value imputation must be the first phase.
 }
 \examples{
 ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)

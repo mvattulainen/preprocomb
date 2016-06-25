@@ -9,68 +9,70 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Preprocessing is often the most time-consuming phase in knowledge
-discovery and preprocessing transformations interdependent in unexpected
+Preprocessing is often the most time-consuming phase in data analysis
+and preprocessing transformations interdependent in unexpected
 ways. This package helps to make preprocessing faster and more effective. It
-provides an S4 framework for creating and testing preprocessing combinations
+provides an S4 framework for creating and evaluating preprocessing combinations
 for classification, clustering and outlier detection. The framework supports
-user-defined and domain-specific preprocessors and preprocessing phases.
-Default preprocessors can be used for low variance removal, missing value
-imputation, scaling, outlier removal, noise smoothing, feature selection and
-class imbalance correction.
+adding of user-defined preprocessors and preprocessing phases. Default preprocessors 
+can be used for low variance removal, missing value imputation, scaling, outlier 
+removal, noise smoothing, feature selection and class imbalance correction.
 
 ## Test data
 
-Let's add contaminations to Iris-data to simulate data quality problems:
+Let's start by adding contaminations to Iris-data to simulate the need for preprocessing:
 
 ```{r}
 set.seed(1)
 testdata <- iris
-testdata[,2] <- rnorm(150, testdata[,2], 1) # add noise to the second variable
-testdata[sample(1:150,20),3] <- sample(20:40,20, replace=TRUE) # add outliers to the third
+testdata[sample(1:150,40),3] <- NA # add missing values to the third variable
+testdata[,4] <- rnorm(150, testdata[,4], 2) # add noise to the fourth variable
 testdata$Irrelevant <- runif(150, 0, 1) # add an irrelevant feature
-testdata <- droplevels(testdata[1:70,]) # add class imbalance
 ```
 
 ## Interactive mode
 
-In the interactive mode we can apply preprocessing techniques in a sequence and
-see the end result on classification accuracy. In the below the data is first
-scaled and then outliers removed with Orh-algorithm. K-nearest neighbour is 
-the default classifier.
+In the interactive mode preprocessing techniques can be applied in a sequence
+with function prepro(). The resulting object contains the preprocessing call
+history, computations and the fitness of the preprocessed data for model fitting.
+In the example below missing values are imputed first with meanimpute and then outliers removed with Orh-algorithm.  Support vector machine svmRadial from kernlab package is used as a classifier. The default classifier is rpart from rpart package.
 
 ```{r, include=FALSE, cache=FALSE}
 suppressMessages(library(ggplot2))
 suppressMessages(library(lattice))
+suppressMessages(library(kernlab))
+suppressMessages(library(rpart))
+
 ```
 
 ```{r, messages=FALSE, warnings=FALSE}
 library(preprocomb)
-
-step1 <- prepro(testdata, "basicscale")
-step2 <- prepro(step1, "orhoutlier")
+step1 <- prepro(testdata, "meanimpute", model="svmRadial")
+step2 <- prepro(step1, "orhoutlier", model="svmRadial")
 step2
 ```
 
 ## Programmatic mode
 
-In the programmatic mode we can search for the best combinations by first setting
-the grid of combinations and the evaluating each combination. In the example below
-the preprocessing pipeline consists 3200 combinations and their evaluation. The
-evaluation took 2 hours on Intel Celeron 1.4 GHz and two cores. 
-```{r, messages=FALSE, warnings=FALSE, eval=FALSE}
-examplegrid <- setgrid(phases=preprodefault, data=testdata)
-exampleresult <- preprocomb(grid=examplegrid, nholdout=4, cores=2)
+In the programmatic mode search for the best combinations is executed. 
+First, a grid of preprocessing combinations and corresponding preprocessed
+data sets is created. Secondly, the preprocessed data sets are evaluated for
+classification accuracy, clustering tendency and skewness of outlier scores
+In the example below the preprocessing pipeline consists 540 combinations and 
+their evaluations.  
 
+```{r, messages=FALSE, warnings=FALSE, eval=FALSE}
+examplegrid <- setgrid(phases=c("imputation", "outliers", "scaling", "smoothing", "selection"), data=testdata)
+exampleresult <- preprocomb(grid=examplegrid, models=c("svmRadial"), nholdout=10, cluster=TRUE, outlier=TRUE, cores=2)
 ```
 
-There are slots that can be extracted:
+Extracting the wall-clock time of execution in minutes:
 
-- rawall
-- allclassification
-- bestclassification
-- allclustering
-- alloutliers
+```{r, messages=FALSE, warnings=FALSE}
+exampleresult@walltime
+```
+
+Extracting the best combinations for classification:
 
 ```{r, messages=FALSE, warnings=FALSE}
 exampleresult@bestclassification
@@ -81,22 +83,22 @@ exampleresult@bestclassification
 The package is intended to be used with domain specific preprocessing phases and 
 techniques. There are however a set of default options available. Phases:
 
-- imputation, missing value imputation
-- variance, low variance removal
-- smoothing, noise smoothing
-- scaling, value range scaling 
-- outliers, outlier removal
-- sampling, class imbalance corrections
-- selection, irrelevant feature selection
+- "imputation", missing value imputation
+- "variance", low variance removal
+- "smoothing", noise smoothing
+- "scaling", value range scaling 
+- "outliers", outlier removal
+- "sampling", class imbalance corrections
+- "selection", irrelevant feature selection
 
-Each of the phases has two or more preprocessing techniques. Available preprocessing
-techniques can be shown by:
+Each of the phases has two or more preprocessing techniques including "noaction". 
+Available preprocessing techniques can be shown by:
 
 ```{r, messages=FALSE, warnings=FALSE}
 getpreprocessor()
 ```
 
-and function definition by giving the name of preprocessing technique as argument:
+and preprocecssor function definition by giving the name of the preprocessing technique as argument:
 
 ```{r, messages=FALSE, warnings=FALSE}
 getpreprocessor("basicscale")
@@ -115,17 +117,22 @@ dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@x), y=data
 }
 ```
 
-Notice that new functions must return a DataClass object. 
+Notice that added preprocecessing technique definition input and output are both DataClass
+objects. The slot "y" is a factor vector containing the class labels and slot "x" the other
+variables, which all must be numeric.
 
 Step 2: Adding of the function to the system
 
 ```{r, messages=FALSE, warnings=FALSE}
 setpreprocessor("scaleexample", "scaleexample(dataobject)")
+step3 <- prepro(step2, "scaleexample", model="svmRadial") # continues the example above
+step3
 ```
 
-and defined preprocessing techniques can be added to phases:
+Added preprocessing techniques can be added to phases and used in creating a new grid of combinations:
 
-```{r, messages=FALSE, warnings=FALSE}
-newscalingphase <- setphase("newscaling", c("scaleexample"), TRUE)
+```{r, messages=FALSE, warnings=FALSE, eval=FALSE}
+newscaling <- setphase("newscaling", c("noaction", "scaleexample"), TRUE)
+newexamplegrid <- setgrid(phases=c("imputation", "newscaling"), data=testdata)
 ```
 

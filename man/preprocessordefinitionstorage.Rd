@@ -9,7 +9,8 @@
 preprocessordefinitionstorage
 }
 \description{
-an environment to get the preprocessing technique function bodies
+an environment to save and get the preprocessing technique function bodies. Note, this environment
+is only created for function getpreprocessor(). \cr
 }
 \keyword{datasets}
 

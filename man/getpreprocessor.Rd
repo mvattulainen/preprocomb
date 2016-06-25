@@ -7,12 +7,14 @@
 getpreprocessor(preprocessor = NULL)
 }
 \arguments{
-\item{preprocessor}{(character) name of preprocessor, defaults to NULL for list of all preprocessors
-get preprocessor technique function body defined with setpreprocessor().
-Shown preprocessors can be used by functions prepro() and setphase().}
+\item{preprocessor}{(character) name of preprocessor, defaults to NULL for list of all preprocessors}
 }
 \description{
 gets preprocessor definition
+}
+\details{
+getpreprocessor with the name of the preprocessor shows preprocessing function body defined with setpreprocessor().\cr
+getpreprocessor without name shows all preprocessors that can be used by functions prepro() and setphase().
 }
 \examples{
 getpreprocessor()

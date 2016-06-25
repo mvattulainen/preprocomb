@@ -41,8 +41,8 @@ extract <- function(x){
 
 #' environment for storing preprocessor definitions
 #'
-#' an environment to get the preprocessing technique function bodies
-#' @export
+#' an environment to save and get the preprocessing technique function bodies. Note, this environment
+#' is only created for function getpreprocessor(). \cr
 preprocessordefinitionstorage <- new.env()
 
 
@@ -50,8 +50,21 @@ preprocessordefinitionstorage <- new.env()
 
 #' preprocomb example
 #'
-#' An example grid object made of modified Iris-data with 3200 combinations \cr
-#' evaluated with knn classifier classification accuracy and four holdrounds for each.
+#' Modified Iris-data preprocessed with 540 combinations and evaluated with \cr
+#' support vector machine classifier. \cr
+#'
+#' # testdata \cr
+#' set.seed(1) \cr
+#' testdata <- iris \cr
+#' testdata[sample(1:150,40),3] <- NA # add missing values to the third variable \cr
+#' testdata[,4] <- rnorm(150, testdata[,4], 2) # add noise to the fourth variable \cr
+#' testdata$Irrelevant <- runif(150, 0, 1) # add an irrelevant feature \cr
+#'
+#' # grid with five phases totalling 540 combinations \cr
+#' examplegrid <- setgrid(phases=c("imputation", "outliers", "scaling", "smoothing", "selection"), data=testdata)
+#'
+#' # evaluation of the grid \cr
+#' exampleresult <- preprocomb(grid=examplegrid, models=c("svmRadial"), nholdout=10, cluster=TRUE, outlier=TRUE, cores=2)
 #'
 #' @format A PreProCombClass object
 "exampleresult"

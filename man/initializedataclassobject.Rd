@@ -10,7 +10,7 @@ initializedataclassobject(data)
 \item{data}{(data.frame)}
 }
 \description{
-initializedataclassobject is used when new preprocessing techniques are added to the
+initializedataclassobject() is used when new preprocessing techniques are added to the
 system by the user. Added preprocessing techniques (i.e. functions) must return a
 DataClass object.
 }

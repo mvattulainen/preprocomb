@@ -34,7 +34,7 @@ validatedata <- function(object){
 
 #' initialize a DataClass object
 #'
-#' initializedataclassobject is used when new preprocessing techniques are added to the
+#' initializedataclassobject() is used when new preprocessing techniques are added to the
 #' system by the user. Added preprocessing techniques (i.e. functions) must return a
 #' DataClass object.
 #' @param data (data.frame)

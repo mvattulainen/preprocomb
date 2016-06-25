@@ -9,9 +9,6 @@ This class implements the separation of data used for
 analysis and analysis of the data. The latter can include
 computation of association rules as in showrules().
 }
-\details{
-Extensions can included analysis of catclassification by association rules or modelling
-}
 \section{Slots}{
 
 \describe{
@@ -28,5 +25,7 @@ Extensions can included analysis of catclassification by association rules or mo
 \item{\code{bestclustering}}{(data frame) best hopkins statistics combinations}
 
 \item{\code{alloutliers}}{(data frame) ORH outlier score for 95 percent quantile value}
+
+\item{\code{walltime}}{(integer) execution time in minutes by wall time (not computation time)}
 }}
 

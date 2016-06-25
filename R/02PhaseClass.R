@@ -12,12 +12,13 @@ setClass("PhaseClass", representation(objectname="character", preprotransformati
 #'
 #' @param phasename (character) name of the phase
 #' @param preprocessor (character) vector of preprocessors (see ?setpreprocessor) belonging to the phase
-#' @param preimpute (logical) whether phase is executed before missing value imputation
+#' @param preimpute (logical) whether phase is missing value imputation
 #' @return a PhaseClass object
 #' @examples
 #' ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
 #' @export
-#' @details All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'.
+#' @details All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'. \cr
+#' If dataset contains missing values, missing value imputation must be the first phase.
 
 setphase <- function(phasename, preprocessor, preimpute){
 

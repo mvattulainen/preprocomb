@@ -36,15 +36,12 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
 
     modelsresults <- data.frame(matrix(ncol=length(predictors)+1, nrow=nholdout))
 
-    for (l in 1:length(predictors))
+    for (l in 1:length(predictors)) ## for each classifier
     {
 
-      #holdoutresults <- numeric()
+
 
       holdoutaccuracy <- foreach::foreach(j=1:nholdout, .combine='c', .packages=c('caret', packagevector)) %dopar% {
-
-      #for(m in 1:nholdout)
-      #{
 
         training <- caret::createDataPartition(preprocesseddataset$y, times=1, list=FALSE, p=0.66)[,1]
         intrain <- preprocesseddataset[training,]
@@ -56,22 +53,20 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
         mod <- caret::train(y ~., data=intrain, method=predictors[l], tuneGrid=klist[[l]], trControl=trainControl(method="none"))
         prediction <- predict(mod, newdata=intest)
 
-        #holdoutresults[m] <- mean(prediction==intest$y)
-
         holdoutaccuracy <- mean(prediction==intest$y)
 
         }, error= function(e) return({holdoutaccuracy <- NA}) )
 
         }
-      modelsresults[,l] <- mean(holdoutaccuracy)
+      modelsresults[,l] <- holdoutaccuracy
     }
 
     # add one column for mean of predictors
-    modelsresults[,length(predictors)+1] <- apply(modelsresults, 1, function(x) mean(x, na.rm=TRUE))
+    modelsresults[,ncol(modelsresults)] <- apply(modelsresults, 1, function(x) mean(x, na.rm=TRUE))
 
   return(modelsresults)
 
-}, error= function(e) return({modelsresults <- rep(NA, length(predictors)+1)} ))
+}, error= function(e) return({modelsresults <- rep(NA, ncol(modelsresults))} ))
 
 }
 

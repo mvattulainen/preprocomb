@@ -18,17 +18,17 @@ NULL
 #' @slot allclustering (data frame) hopkins statistics values
 #' @slot bestclustering (data frame) best hopkins statistics combinations
 #' @slot alloutliers (data frame) ORH outlier score for 95 percent quantile value
-#' @details Extensions can included analysis of catclassification by association rules or modelling
+#' @slot walltime (integer) execution time in minutes by wall time (not computation time)
 #' @export
 
-setClass("PreProCombClass", representation(rawall="data.frame", catclassification="data.frame", allclassification="data.frame", bestclassification="data.frame", allclustering="data.frame", bestclustering="data.frame", alloutliers="data.frame"))
+setClass("PreProCombClass", representation(rawall="data.frame", catclassification="data.frame", allclassification="data.frame", bestclassification="data.frame", allclustering="data.frame", bestclustering="data.frame", alloutliers="data.frame", walltime="integer"))
 
 #' the MAIN function of programmatic use.
 #'
 #' preprocomb executes the computation of classification accuracy, hopkins statistic and ORH outlier score.
 #' An alternative to preprocomb is to use package 'metaheur' for faster finding of near-optimal combinations.
 #
-#' @param models (character) vector of models (names of models as defined in package caret), defaults to "knn"
+#' @param models (character) vector of models (names of models as defined in package caret), defaults to "rpart"
 #' @param gridclassobject (GridClass) object representing the grid of combinations
 #' @param nholdout (integer) number of holdout rounds for predictive classification, must be two or more, defaults to two
 #' @param searchmethod (character) defaults to "exhaustive" full blind search, "random" search 20 percent of grid, "grid" grid search 10 percent
@@ -49,15 +49,17 @@ setClass("PreProCombClass", representation(rawall="data.frame", catclassificatio
 #' ## result@@rawall
 #' ## result@@catclassification
 #' ##
-#' ## newphases <- c("outlier", "smoothing", "scaling", "selection", "sampling")
+#' ## newphases <- c("outliers", "smoothing", "scaling", "selection", "sampling")
 #' ## newmodels <- c("knn", "rf", "svmRadial")
 #' ## grid1 <- setgrid(phases=newphases, data=modifiediris)
 #' ## result1 <- preprocomb(models=newmodels, grid=grid1, nholdout=1, search="grid")
 #' @export
 
-preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="exhaustive", predict=TRUE, cluster=FALSE, outlier=FALSE, cores=1){
+preprocomb <- function(models="rpart", gridclassobject, nholdout=2, searchmethod="exhaustive", predict=TRUE, cluster=FALSE, outlier=FALSE, cores=1){
 
   doParallel::registerDoParallel(cores=cores)
+
+  starttime <- Sys.time()
 
   predictors <- models
 
@@ -122,6 +124,10 @@ preprocomb <- function(models="knn", gridclassobject, nholdout=2, searchmethod="
   preprocombclassobject@alloutliers <- data.frame(out[[5]], Orh_skewness=round(out[[4]],2))
 
   doParallel::stopImplicitCluster()
+
+  endtime <- Sys.time()
+
+  preprocombclassobject@walltime <- as.integer(difftime(endtime, starttime, units="mins"))
 
   return(preprocombclassobject)
 }

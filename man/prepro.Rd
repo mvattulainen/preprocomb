@@ -4,25 +4,28 @@
 \alias{prepro}
 \title{the MAIN function for interactive use.}
 \usage{
-prepro(dataobject, classname, model = "knn", nholdout = 2, cores = 1)
+prepro(dataobject, classname, model = "rpart", nholdout = 2, cores = 1)
 }
 \arguments{
 \item{dataobject}{(sub class/ data frame/ DataClass) object}
 
 \item{classname}{(character) name of preprocessor (i.e. PreprocessorClass sub class as defined by setpreprocessor())}
 
-\item{model}{(character) caret model name, note: the required model library must be attached, defaults to "knn"}
+\item{model}{(character) caret model name, note: the required model library must be attached, defaults to "rpart"}
 
 \item{nholdout}{(integer) number of holdout rounds used in computation of classification accuracy, must be two or more, defaults to 2}
 
-\item{cores}{(integer) number of cores used in parallel processing of holdout rounds, default to 1}
+\item{cores}{(integer) number of cores used in parallel processing of holdout rounds, defaults to 1}
 }
 \value{
 object of PreprocessorClass sub class
 }
 \description{
-prepro takes data, transforms it according to the given preprocessor and computes statistics of the
+prepro() takes data, transforms it according to the given preprocessor and computes statistics of the
 transformed data. The main use case is the chaining of the preprocessors as show in the examples below.
+}
+\details{
+If a data object has missing values, one of the imputation preprocessors must be applied first.
 }
 \examples{
 ## a <- prepro(iris, "basicscale")
