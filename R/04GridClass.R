@@ -1,6 +1,8 @@
 #' @include 03PreprocessorClass.R
 NULL
 
+## REPORT THE OUTCOME OF DATA VALIDATION
+
 reportexitstatus <- function(preprocesseddatasets){
 
   if(class(preprocesseddatasets)!="list"){stop("Argument 'preprocesseddatasets' to function 'reportexitstatus' must of a list.")}
@@ -21,6 +23,8 @@ reportexitstatus <- function(preprocesseddatasets){
 
 }
 
+## CREATE GRID OF PREPROCESSING COMBINATIONS FROM FROM PHASES
+
 creategrid <- function(phases){
   if(class(phases)!="list"){stop("Argument 'phases' to function 'creategrid' must of a list.")}
   grid <- expand.grid(lapply(phases, function(x) eval(as.name(x))@preprotransformations))
@@ -28,7 +32,7 @@ creategrid <- function(phases){
   return(grid)
 }
 
-## DATA FORMATION
+## PREPROCESS DATA FOR A SINGLE SUBCLASS OBJECT
 
 initializedataslot <- function(classname, dataobject){
 
@@ -51,6 +55,8 @@ initializedataslot <- function(classname, dataobject){
 
 }
 
+## PREPROCESS DATA FOR THE WHOLE GRID
+
 executepreprocessing <- function(grid, dataobject){
 
   if(class(grid)!="data.frame"){stop("Argument 'grid' must of a data frame of a GridClass object.")}
@@ -61,9 +67,14 @@ executepreprocessing <- function(grid, dataobject){
 
   for (rowingrid in 1:nrow(grid))
   {
+
+    # PREPROCESS INPUT DATA BY THE FIRST COLUMN OF THE GRID
+
     out_preprocesseddatasets[[rowingrid]] <- initializedataslot(as.character(grid[rowingrid, firstcolumningrid]), dataobject) # first column of grid
 
     if (ncol(grid) > 1){
+
+      # PREPROCESS CONSEQUENT COLUMNS
 
       for (columningrid in 2:ncol(grid))
       {
@@ -74,6 +85,7 @@ executepreprocessing <- function(grid, dataobject){
 
   }
 
+  # VALIDATE AND REPORT PREPROCESSED DATA MODEL FITTING STATUS
   out_preprocesseddatasets <- lapply(out_preprocesseddatasets, function(x) slot(x, "data"))
   out_preprocesseddatasets <- lapply(out_preprocesseddatasets, validatedata)
   print(reportexitstatus(out_preprocesseddatasets))
@@ -137,18 +149,23 @@ if (issamplingincluded==TRUE & hasmorethantwolevels==TRUE) {stop("Default phase 
 
 gridclassobject <- new("GridClass")
 
+# Create grid
+
 gridclassobject@grid <- creategrid(phases)
 
-# Validate preprocessors
+# Test preprocessors
 
 if (diagnostics==TRUE){
 print("Running diagnostics on single preprocessors:")
 validation <- testpreprocessors(unique(unlist(gridclassobject@grid)))
 }
 print("Preprocessing data set by combinations:")
+
+# Preprocess data
+
 gridclassobject@data <- executepreprocessing(gridclassobject@grid, dataclassobject)
 
-# Validation results on combinations
+# Collect validation results on combinations
 validationresults <- data.frame(gridclassobject@grid, data.frame(t(data.frame(lapply(gridclassobject@data, extract)))))
 row.names(validationresults) <- NULL
 gridclassobject@validation <- validationresults

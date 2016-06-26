@@ -70,15 +70,22 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
 
 }
 
+# COMPUTE CLUSTERING TENDENCY
+
 gethopkins <- function(dat){
 output <- unlist(clustertend::hopkins(dat@x, n=as.integer(nrow(dat@x)/3)))
 }
+
+# COMPUTE SKEWNESS OF OUTLIER SCORES
 
 getorh <- function(dat){
   orh_score <- suppressMessages(DMwR::outliers.ranking(dat@x))
   orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
   output <- e1071::skewness(orh_rank)
 }
+
+
+## BY SEARCH TYPE, SET WHICH ROWS IN THE GRID WILL BE EVALUATED
 
 gridrowsinsearch <- function(searchmethod, grid){
 

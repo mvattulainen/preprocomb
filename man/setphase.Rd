@@ -17,8 +17,8 @@ setphase(phasename, preprocessor, preimpute)
 a PhaseClass object
 }
 \description{
-Preprocessing techniques defined with setpreprocessor() can be combined to a phase.
-Phases defined with setphase() can be combined to a grid of combinations with setgrid().
+Preprocessing phases consist of preprocessing techniques defined with setpreprocessor().
+Phases can be defined with setphase() and combined to a grid of combinations with setgrid().
 }
 \details{
 All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'. \cr

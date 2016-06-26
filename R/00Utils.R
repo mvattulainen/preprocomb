@@ -1,5 +1,5 @@
 
-## NAMESPACE
+## NAMESPACE, IMPORTS
 
 #' @importFrom randomForest randomForest
 NULL
@@ -19,25 +19,25 @@ NULL
 #'@import foreach
 NULL
 
-## FUNCTIONS
+## SUPPORTING FUNCTIONS
 
-# Mode for VOTE
+# get mode
 
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]}
 
-# Test for even/odd
+# test for even/odd
 
 is.odd <- function(x) x %% 2 != 0
 
-# Extract validation results
+# extract validation results
 
 extract <- function(x){
   row <- c(variance=x@variance, finite=x@finite, completeobs=x@completeobs, classbalance=x@classbalance, ntopratiotwoplus=x@ntopratiotwoplus, mindimensions=x@mindimensions)
 }
 
-# ENVIRONMENT FOR STORING PREPRECESSOR DEFINITIONS
+## SUPPORTING ENVIRONMENT
 
 #' environment for storing preprocessor definitions
 #'
@@ -45,8 +45,7 @@ extract <- function(x){
 #' is only created for function getpreprocessor(). \cr
 preprocessordefinitionstorage <- new.env()
 
-
-#globalVariables(c("result","combinationevaluation", "predictor", "skewness"))
+## SUPPORTING DATA
 
 #' preprocomb example
 #'

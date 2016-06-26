@@ -57,13 +57,14 @@ setClass("PreProCombClass", representation(rawall="data.frame", catclassificatio
 
 preprocomb <- function(models="rpart", gridclassobject, nholdout=2, searchmethod="exhaustive", predict=TRUE, cluster=FALSE, outlier=FALSE, cores=1){
 
+  ## PREPARING ACTIVITIES
+
   doParallel::registerDoParallel(cores=cores)
 
   starttime <- Sys.time()
 
   predictors <- models
 
-  # prediction control: TO BE ELIMINATED
   if(class(predictors)!="character"){stop("The argument predictors must a character vector.")}
 
   if(class(gridclassobject)!="GridClass"){stop("The argument grid must be a GridClass object.")}
@@ -79,9 +80,13 @@ preprocomb <- function(models="rpart", gridclassobject, nholdout=2, searchmethod
   if (class(cluster)!="logical"){stop("Argument 'cluster' must a logical")}
   if (class(outlier)!="logical"){stop("Argument 'outlier' must a logical")}
 
+  ## CORE FUNCTIONALITY
+
   out <- combinationevaluation(predictors, gridclassobject, nholdout, searchmethod, predict, cluster, outlier)
 
   preprocombclassobject <- new("PreProCombClass")
+
+  ## FININALIZE THE RESULTS
 
   # all classification accuracies
 

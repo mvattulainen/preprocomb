@@ -2,7 +2,7 @@
 % Please edit documentation in R/01DataClass.R
 \name{initializedataclassobject}
 \alias{initializedataclassobject}
-\title{initialize a DataClass object}
+\title{constructor function for creating a DataClass object}
 \usage{
 initializedataclassobject(data)
 }
@@ -10,9 +10,9 @@ initializedataclassobject(data)
 \item{data}{(data.frame)}
 }
 \description{
-initializedataclassobject() is used when new preprocessing techniques are added to the
-system by the user. Added preprocessing techniques (i.e. functions) must return a
-DataClass object.
+initializedataclassobject() is a constructor function for creating a DataClass object. The main
+use case is adding of new preprocessing techniques to the framework by the user. Added preprocessing
+techniques (i.e. functions) take as input and must return a DataClass object. See setpreprocessor().
 }
 \details{
 Argument 'data' must have only numeric columns and one factor column.

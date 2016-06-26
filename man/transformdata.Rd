@@ -12,7 +12,7 @@ transformdata(object, dataobject)
 \item{dataobject}{(DataClass/data frame) object}
 }
 \description{
-transformdata is a generic function. Its methods are defined by setpreprocessor().
+transformdata is a generic preprocessing function. Its methods are defined by setpreprocessor().
 The function is intented for package internal use, but exported so that classes can be inhereted from it.
 }
 
