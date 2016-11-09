@@ -3,41 +3,43 @@ NULL
 
 setClass("DataClass", representation(x="data.frame", y="factor", variance="logical", finite="logical", completeobs="logical", classbalance="logical", ntopratiotwoplus="logical", mindimensions="logical"))
 
-## VALIDATE THAT MODELS CAN BE SAFELY FITTED FOR A PREPROCESSED DATA SET
+## VALIDATE WHETHER MODELS CAN BE SAFELY FITTED FOR A PREPROCESSED DATA SET
 
 validatedata <- function(object){
 
-  data <- object
-
-  # has variance
-  temp <- length(caret::nearZeroVar(data@x))
-  data@variance <- temp==0
+  # has variance: caret nearZeroVar returns zero length
+  temp <- length(caret::nearZeroVar(object@x))
+  object@variance <- temp==0
 
   # is finite
-  temp1 <- all(apply(data@x, 1:2, is.finite))
-  data@finite <- temp1==TRUE
+  temp1 <- all(apply(object@x, 1:2, is.finite))
+  object@finite <- temp1==TRUE
 
   # has complete observations
-  temp2 <- any(apply(data@x, 1:2, is.na))
-  data@completeobs <- temp2==FALSE
+  temp2 <- any(apply(object@x, 1:2, is.na))
+  object@completeobs <- temp2==FALSE
 
   # has class balance
-  temp3 <- length(caret::nearZeroVar(data.frame(data@y)))
-  data@classbalance <- temp3==0
+  temp3 <- length(caret::nearZeroVar(data.frame(object@y)))
+  object@classbalance <- temp3==0
 
   # has n to p ratio more than 2
-  temp5 <- nrow(data@x) > (2*ncol(data@x))
-  data@ntopratiotwoplus <- temp5==TRUE
+  temp5 <- nrow(object@x) > (2*ncol(object@x))
+  object@ntopratiotwoplus <- temp5==TRUE
 
   # has minimum dimensions
-  temp6 <- all(dim(data@x) > c(20,3))
-  data@mindimensions <- temp6
+  temp6 <- all(dim(object@x) > c(20,3))
+  object@mindimensions <- temp6
 
   # least frequence class label has more than 4 observations
-  minimumycheck <- min(table(data@y))
+  minimumycheck <- min(table(object@y))
   if (minimumycheck < 5) {stop("One level in the factor variable has less than five observations.")}
 
-  return(data)
+  # test that all validation slots have boolean value
+  testvalidationresult <- extract(object)
+  if (!all(class(testvalidationresult)=="logical")) {warning("Data validation for a data object failed.")}
+
+  return(object)
 
 }
 
@@ -50,7 +52,8 @@ validatedata <- function(object){
 #' @details Argument 'data' must have only numeric columns and one factor column.
 #' @export
 #' @examples
-#' ## dataobject <- initializedataclassobject(iris)
+#' dataobject <- initializedataclassobject(iris)
+#' @keywords internal
 
 initializedataclassobject <- function(data){
 

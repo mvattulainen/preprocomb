@@ -20,4 +20,5 @@ This function is used internally and exported for package 'metaheur'.
 If model tuning fails, NA is returned as classification accuracy of a combination.
 If model fitting and prediction for holdout round fails, NA is returned for the holdout round.
 }
+\keyword{internal}
 

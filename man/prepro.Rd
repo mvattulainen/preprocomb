@@ -4,12 +4,12 @@
 \alias{prepro}
 \title{the MAIN function for interactive use.}
 \usage{
-prepro(dataobject, classname, model = "rpart", nholdout = 2, cores = 1)
+prepro(dataobject, preprocessor, model = "rpart", nholdout = 2, cores = 1)
 }
 \arguments{
 \item{dataobject}{(sub class/ data frame/ DataClass) object}
 
-\item{classname}{(character) name of preprocessor (i.e. PreprocessorClass sub class as defined by setpreprocessor())}
+\item{preprocessor}{(character) name of preprocessor}
 
 \item{model}{(character) caret model name, note: the required model library must be attached, defaults to "rpart"}
 
@@ -25,7 +25,7 @@ prepro() takes data, transforms it according to the given preprocessor and compu
 transformed data. The main use case is the chaining of the preprocessors as show in the examples below.
 }
 \details{
-If a data object has missing values, one of the imputation preprocessors must be applied first.
+NOTE: If a data object has missing values, one of the imputation preprocessors must be applied first.
 }
 \examples{
 ## a <- prepro(iris, "basicscale")

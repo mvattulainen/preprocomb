@@ -3,7 +3,7 @@
 \docType{class}
 \name{GridClass-class}
 \alias{GridClass-class}
-\title{container for preprocessor combinations and preprocessed data sets.}
+\title{An S4 class representing (unevaluated) preprocessing combinations}
 \description{
 Preprocessing techniques defined with setpreprocessor() can be combined to a phase.
 Phases defined with setphase() can be combined to a grid of combinations with setgrid().

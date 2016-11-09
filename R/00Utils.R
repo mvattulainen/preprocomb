@@ -10,6 +10,9 @@ NULL
 #' @import caret
 NULL
 
+#' @import ggplot2
+NULL
+
 #' @importFrom stats cor lowess predict quantile rbinom sd
 NULL
 
@@ -17,6 +20,9 @@ NULL
 NULL
 
 #'@import foreach
+NULL
+
+#' @importFrom graphics boxplot
 NULL
 
 ## SUPPORTING FUNCTIONS
@@ -43,27 +49,39 @@ extract <- function(x){
 #'
 #' an environment to save and get the preprocessing technique function bodies. Note, this environment
 #' is only created for function getpreprocessor(). \cr
+#' @export
+#' @keywords internal
 preprocessordefinitionstorage <- new.env()
 
 ## SUPPORTING DATA
 
+#' preprosim example
+#'
+#' examplesimulation <- preprosimrun(iris, fitmodels=FALSE) # 6561 contaminated data sets \cr
+#' @format A PreprosimClass object
+#' @keywords internal
+"examplesimulation"
+
+#' setgrid example
+#'
+#' Contaminated Iris-data preprocessed with 90 combinations. \cr
+#' examplecombgrid <- setgrid(phases=c("imputation", "scaling", "smoothing"), data=contaminateddf) \cr
+#' @format GridClass
+"examplecombgrid"
+
 #' preprocomb example
 #'
-#' Modified Iris-data preprocessed with 540 combinations and evaluated with \cr
-#' support vector machine classifier. \cr
-#'
-#' # testdata \cr
-#' set.seed(1) \cr
-#' testdata <- iris \cr
-#' testdata[sample(1:150,40),3] <- NA # add missing values to the third variable \cr
-#' testdata[,4] <- rnorm(150, testdata[,4], 2) # add noise to the fourth variable \cr
-#' testdata$Irrelevant <- runif(150, 0, 1) # add an irrelevant feature \cr
-#'
-#' # grid with five phases totalling 540 combinations \cr
-#' examplegrid <- setgrid(phases=c("imputation", "outliers", "scaling", "smoothing", "selection"), data=testdata)
-#'
-#' # evaluation of the grid \cr
-#' exampleresult <- preprocomb(grid=examplegrid, models=c("svmRadial"), nholdout=10, cluster=TRUE, outlier=TRUE, cores=2)
-#'
-#' @format A PreProCombClass object
+#' Modified Iris-data preprocessed with 90 combinations and evaluated with \cr
+#' svmRadial classifier and 400 times repreated holdout validation. \cr
+#' @format ResultClass
 "exampleresult"
+
+#' metaheur example
+#'
+#' examplemetaheur <- metaheur(examplegrid, model="svmRadial", iterations = 30, nholdout = 400) \cr
+#' @format A MetaheurClass object
+#' @keywords internal
+"examplemetaheur"
+
+globalVariables(c("out", "Index", "value", "outlier"))
+

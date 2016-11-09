@@ -3,16 +3,16 @@
 \docType{data}
 \name{preprodefault}
 \alias{preprodefault}
-\title{seven default phases with preprocessing techniques}
-\format{An object of class \code{character} of length 7.}
+\title{six default phases with preprocessing techniques}
+\format{An object of class \code{character} of length 6.}
 \usage{
 preprodefault
 }
 \description{
-Totals 3200 combinations. preprodefault object can be used as default phases for setgrid().
+Totals 1080 combinations. preprodefault object can be used as default phases for setgrid().
 }
 \examples{
 ## grid <- setgrid(preprodefault, iris)
 }
-\keyword{datasets}
+\keyword{internal}
 

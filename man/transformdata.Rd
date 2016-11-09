@@ -15,4 +15,5 @@ transformdata(object, dataobject)
 transformdata is a generic preprocessing function. Its methods are defined by setpreprocessor().
 The function is intented for package internal use, but exported so that classes can be inhereted from it.
 }
+\keyword{internal}
 

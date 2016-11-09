@@ -4,17 +4,18 @@
 \alias{showrules}
 \title{shows association rules for classification accuracy.}
 \usage{
-showrules(PreProCombClassobject, support = 0.05, confidence = 0.5)
+showrules(ResultClassobjectobject, support = 0.05, confidence = 0.5)
 }
 \arguments{
-\item{PreProCombClassobject}{(PreProCombClass)}
-
 \item{support}{(numeric) support for association rules, default to 0.05}
 
 \item{confidence}{(numeric) confidence for association rules, defaults to 0.5}
+
+\item{PreProCombClassobject}{(PreProCombClass)}
 }
 \description{
 Classification accuracy label  'high' corresponds to best twenty
 percent and 'low' for the rest.
 }
+\keyword{internal}
 

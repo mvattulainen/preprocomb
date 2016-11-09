@@ -14,12 +14,9 @@ reportexitstatus <- function(preprocesseddatasets){
   ntopratiotwoplus <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "ntopratiotwoplus")))
   mindimensions <- unlist(lapply(preprocesseddatasets, function(x) slot(x, "mindimensions")))
 
-  check <- all(c(variance, finite, completeobs, classbalance, ntopratiotwoplus, mindimensions))==TRUE
+  check <- all(c(variance, finite, completeobs, classbalance, ntopratiotwoplus, mindimensions))
 
-  if (check==TRUE) {exitstatus <- c("Exit status: OK: Stable computation of misclassification errors expected.")}
-  if (check==FALSE) {exitstatus <- c("Exit status: Warning: Unstable computation of misclassification errors expected. See: yourgridclassobject@data")}
-
-  return(exitstatus)
+  return(check)
 
 }
 
@@ -32,28 +29,7 @@ creategrid <- function(phases){
   return(grid)
 }
 
-## PREPROCESS DATA FOR A SINGLE SUBCLASS OBJECT
 
-initializedataslot <- function(classname, dataobject){
-
-  tryCatch({
-
-  subclassobject <- new(classname)
-
-  if (class(dataobject)=="DataClass") {transformeddata <- transformdata(subclassobject, dataobject)}
-
-  if (class(dataobject)=="data.frame") {transformeddata <- transformdata(subclassobject, initializedataclassobject(dataobject))}
-
-  if (is(dataobject, "PreprocessorClass")==TRUE) {transformeddata <- transformdata(subclassobject, dataobject@data)}
-
-  subclassobject@data <- transformeddata
-
-  return(subclassobject)
-
-  }, error= function(e) return({subclassobject <- new(classname)})
-  )
-
-}
 
 ## PREPROCESS DATA FOR THE WHOLE GRID
 
@@ -88,14 +64,13 @@ executepreprocessing <- function(grid, dataobject){
   # VALIDATE AND REPORT PREPROCESSED DATA MODEL FITTING STATUS
   out_preprocesseddatasets <- lapply(out_preprocesseddatasets, function(x) slot(x, "data"))
   out_preprocesseddatasets <- lapply(out_preprocesseddatasets, validatedata)
-  print(reportexitstatus(out_preprocesseddatasets))
   return(out_preprocesseddatasets)
 }
 
 
 ## GRID
 
-#' container for preprocessor combinations and preprocessed data sets.
+#' An S4 class representing (unevaluated) preprocessing combinations
 #'
 #' Preprocessing techniques defined with setpreprocessor() can be combined to a phase.
 #' Phases defined with setphase() can be combined to a grid of combinations with setgrid().
@@ -111,7 +86,7 @@ executepreprocessing <- function(grid, dataobject){
 
 setClass("GridClass", representation(grid="data.frame", data="list", validation="data.frame"))
 
-#' constructor function for creating the combinations
+#' constructor function for creating preprocessing combinations
 #'
 #' setgrid takes the preprocessing phases, which contain preprocessors and creates
 #' the combinations of them as a grid. It then computes and stores the transformed
@@ -119,21 +94,18 @@ setClass("GridClass", representation(grid="data.frame", data="list", validation=
 #
 #' @param phases (character) vector of phases
 #' @param data (data frame)
-#' @param diagnostics (logical) run testpreprocessor(), defaults to TRUE
 #' @return a GridClass object
 #' @examples
-#' grid <- setgrid(phases=c("outliers", "selection"), data=iris)
+#' grid <- setgrid(phases=c("outliers", "irrelfeatures"), data=iris)
 #' @details If there are missing values, imputation phase must be set as first phase.
 #' Default phase "sampling" can only be used with data, which has binary class labels.
 #' @export
 
-setgrid <- function(phases, data, diagnostics=TRUE){
+setgrid <- function(phases, data){
 
 # Validate arguments
 if(class(phases)!="character"){stop("Argument 'phases' must be a character vector.")}
 if(class(data)!="data.frame"){stop("Argument 'data' must of a data frame.")}
-
-issamplingincluded <- "sampling" %in% phases
 
 phases <- as.list(phases)
 if(!all(lapply(phases, function(x) class(eval(as.name(x))))=="PhaseClass")){
@@ -143,8 +115,8 @@ stop("All elements in argument 'phases' must point to PhaseClass objects.")}
 
 dataclassobject <- initializedataclassobject(data)
 
+issamplingincluded <- "sampling" %in% phases
 hasmorethantwolevels <- length(levels(dataclassobject@y)) > 2
-
 if (issamplingincluded==TRUE & hasmorethantwolevels==TRUE) {stop("Default phase 'sampling' can only be used with data, which has binary class labels.")}
 
 gridclassobject <- new("GridClass")
@@ -154,12 +126,6 @@ gridclassobject <- new("GridClass")
 gridclassobject@grid <- creategrid(phases)
 
 # Test preprocessors
-
-if (diagnostics==TRUE){
-print("Running diagnostics on single preprocessors:")
-validation <- testpreprocessors(unique(unlist(gridclassobject@grid)))
-}
-print("Preprocessing data set by combinations:")
 
 # Preprocess data
 
@@ -174,5 +140,54 @@ return(gridclassobject)
 }
 
 
+#' get preprocessing combinations from a grid
+#' @param gridobject (grid class) object
+#' @export
+#' @examples
+#' head(getcombinations(examplecombgrid))
+
+getcombinations <- function(gridobject){
+  gridobject@grid
+}
+
+#' get preprocessed data set from a grid
+#' @param gridobject (grid class object)
+#' @param nro (integer) combination number
+#' @param type (character) default "dataframe", option "summary"
+#' @export
+#' @examples
+#' str(getpreprocombdf(examplecombgrid, 3))
+
+getpreprocombdf <- function(gridobject,nro, type="dataframe"){
+
+  if (type=="dataframe") {
+  tempdata <- gridobject@data[[nro]]
+  df <- data.frame(tempdata@x, class=tempdata@y)
+  }
+
+  if (type=="summary") {
+    tempdata <- gridobject@data[[nro]]
+    df <- t(data.frame(lapply(tempdata@x, dfsummary)))
+  }
+
+  return(df)
+}
+
+dfsummary <- function(x){
+  c(mean=mean(x, na.rm=TRUE), sd=sd(x, na.rm=TRUE), min=min(x, na.rm=TRUE), max=max(x, na.rm=TRUE))
+}
 
 
+
+setMethod("show", signature(object = "GridClass"), function(object){
+  cat("GRIDCLASS OBJECT", "\n")
+  cat("Number of preprocecessing phases:", ncol(object@grid), "\n")
+  cat("Number of preprocecessing combinations:", nrow(object@grid), "\n")
+  cat("NUMBER OF COMBINATIONS HAVING", "\n")
+  cat("variance (not near zero): ", sum(object@validation$variance.1), "\n")
+  cat("finite values: ", sum(object@validation$finite), "\n")
+  cat("complete observations: ", sum(object@validation$completeobs), "\n")
+  cat("ntop ratio more than two: ", sum(object@validation$ntopratiotwoplus), "\n")
+  cat("minimum dimensions (20+ observations, 3+ variables): ", sum(object@validation$mindimensions), "\n")
+  cat("classes not imbalanced: ", sum(object@validation$classbalance), "\n")
+})

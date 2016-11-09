@@ -4,7 +4,7 @@
 \name{preprocessordefinitionstorage}
 \alias{preprocessordefinitionstorage}
 \title{environment for storing preprocessor definitions}
-\format{An object of class \code{environment} of length 19.}
+\format{An object of class \code{environment} of length 20.}
 \usage{
 preprocessordefinitionstorage
 }
@@ -12,5 +12,5 @@ preprocessordefinitionstorage
 an environment to save and get the preprocessing technique function bodies. Note, this environment
 is only created for function getpreprocessor(). \cr
 }
-\keyword{datasets}
+\keyword{internal}
 

@@ -11,10 +11,17 @@ testpreprocessors(preprocessors = NULL, data = NULL)
 
 \item{data}{(data frame) to be tested against, defaults to random data frame without missing values}
 }
+\value{
+boolean, TRUE is all data object validations are TRUE
+}
 \description{
 Intended to be used when adding new preprocessing techniques with setpreprocessor().
+}
+\details{
+testpreprocessor() with Iris as data argument is called from setpreprocessor()
 }
 \examples{
 testpreprocessors()
 }
+\keyword{internal}
 

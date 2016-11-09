@@ -3,7 +3,7 @@
 \docType{class}
 \name{PreprocessorClass-class}
 \alias{PreprocessorClass-class}
-\title{an abstract class from which concrete preprocessor (sub) classes are inhereted.}
+\title{A virtual S4 class representing preprocessors}
 \description{
 Inheritance is controlled by setpreprocessor() function.
 }
@@ -12,15 +12,13 @@ Inheritance is controlled by setpreprocessor() function.
 \describe{
 \item{\code{objectname}}{(character) object name}
 
-\item{\code{objectoperation}}{(character) operation (expression as character string)}
+\item{\code{objectoperation}}{(character) operation (R expression as character string)}
 
 \item{\code{data}}{(DataClass) object}
 
 \item{\code{classificationaccuracy}}{(numeric) classification accuracy}
 
 \item{\code{hopkinsstatistic}}{(numeric) clustering tendency}
-
-\item{\code{ORHskewness}}{(numeric) skewness value of ORH scores}
 
 \item{\code{callhistory}}{(character) vector of current and previous calls}
 }}

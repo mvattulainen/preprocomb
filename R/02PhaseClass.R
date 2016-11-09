@@ -11,14 +11,14 @@ setClass("PhaseClass", representation(objectname="character", preprotransformati
 #' Phases can be defined with setphase() and combined to a grid of combinations with setgrid().
 #'
 #' @param phasename (character) name of the phase
-#' @param preprocessor (character) vector of preprocessors (see ?setpreprocessor) belonging to the phase
+#' @param preprocessor (character) vector of preprocessors belonging to the phase
 #' @param preimpute (logical) whether phase is missing value imputation
 #' @return a PhaseClass object
 #' @examples
-#' ## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
+#' imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
 #' @export
-#' @details All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'. \cr
-#' If dataset contains missing values, missing value imputation must be the first phase.
+#' @details All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function setpreprocessor(). \cr
+#' If dataset contains missing values, missing value imputation must be the first phase when combining phases to grid with setgrid().
 
 setphase <- function(phasename, preprocessor, preimpute){
 
@@ -28,14 +28,15 @@ setphase <- function(phasename, preprocessor, preimpute){
   if (class(preimpute)!="logical") {stop("Argument 'preimpute' must be a logical (TRUE/FALSE).")}
 
   listofpreprocessors <- as.list(preprocessor)
-  if (any(unlist(lapply(listofpreprocessors, function(x) extends(x, "PreprocessorClass")))=="FALSE")) {
-    stop("All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor'.") }
+  validatepreprocessorcall(listofpreprocessors)
 
   phaseclassobject <- new("PhaseClass", objectname=phasename, preimpute=preimpute)
   phaseclassobject@preprotransformations <- listofpreprocessors
   return(phaseclassobject)
 }
 
-
-
+validatepreprocessorcall <- function(listofpreprocessors) {
+  if (any(unlist(lapply(listofpreprocessors, function(x) extends(x, "PreprocessorClass")))=="FALSE")) {
+    stop("Element or elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function setpreprocessor().") }
+}
 

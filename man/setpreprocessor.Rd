@@ -4,12 +4,14 @@
 \alias{setpreprocessor}
 \title{constructor function for adding a new preprocessing technique to the system}
 \usage{
-setpreprocessor(classname, operation)
+setpreprocessor(classname, operation, description)
 }
 \arguments{
-\item{classname}{(character)}
+\item{classname}{(character) name of the preprocessing techniques}
 
-\item{operation}{(expression as character string)}
+\item{operation}{(expression as character string) expression to be computed on data}
+
+\item{description}{(character)}
 }
 \value{
 NULL, side-effect: definition of S4 class derived from PreprocessorClass and corresponding transformdata-method
@@ -27,5 +29,7 @@ The user-defined S4 class definitions are stored in global environment and thus 
 
 scaleexample <- function(dataobject) dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@x), dataobject@y))
 setpreprocessor("scaleexample", "scaleexample(dataobject)")
+
+setpreprocessor() runs a test on test data frame and prints the outcome of the test.
 }
 

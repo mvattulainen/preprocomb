@@ -11,15 +11,15 @@ NULL
 #' @details If model tuning fails, NA is returned as classification accuracy of a combination.
 #' If model fitting and prediction for holdout round fails, NA is returned for the holdout round.
 #' @export
+#' @keywords internal
 
 getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout){
 
   tryCatch({
 
-    ## TUNING MODEL PARAMETERS
+    # TUNE HYPERPARAMETERS FOR EACH MODEL
 
     fitControl <- caret::trainControl(method="boot", number=2, savePredictions=TRUE)
-
     klist <- list()
     packagevector <- character()
     for (k in 1:length(predictors))
@@ -32,14 +32,12 @@ getprogrammaticprediction <- function(preprocesseddataset, predictors, nholdout)
     if (length(predictors)!=length(klist)) stop("One of the selected models does not have tuning parameters.")
 
 
-    ## HOLDOUTS
+    ## COMPUTE CLASSIFICATION ACCURACIES BY USING THE TUNED HYPERPARAMETERS
 
     modelsresults <- data.frame(matrix(ncol=length(predictors)+1, nrow=nholdout))
 
     for (l in 1:length(predictors)) ## for each classifier
     {
-
-
 
       holdoutaccuracy <- foreach::foreach(j=1:nholdout, .combine='c', .packages=c('caret', packagevector)) %dopar% {
 
@@ -76,15 +74,6 @@ gethopkins <- function(dat){
 output <- unlist(clustertend::hopkins(dat@x, n=as.integer(nrow(dat@x)/3)))
 }
 
-# COMPUTE SKEWNESS OF OUTLIER SCORES
-
-getorh <- function(dat){
-  orh_score <- suppressMessages(DMwR::outliers.ranking(dat@x))
-  orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
-  output <- e1071::skewness(orh_rank)
-}
-
-
 ## BY SEARCH TYPE, SET WHICH ROWS IN THE GRID WILL BE EVALUATED
 
 gridrowsinsearch <- function(searchmethod, grid){
@@ -98,9 +87,6 @@ gridrowsinsearch <- function(searchmethod, grid){
   if (searchmethod=="grid") {
     teninterval <- floor(nrow(grid@grid)/10)
     preproseq <- seq(1, nrow(grid@grid), teninterval)}
-    #seteverytenth <- as.integer(nrow(grid@grid)/(nrow(grid@grid)/10))
-    #preproseq <- as.list(seq(1, nrow(grid@grid), by=seteverytenth))
-    #preproseq <- unlist(lapply(preproseq, function(x) x+sample(0:2, 1)))
 
   return(preproseq)
 }
@@ -109,31 +95,21 @@ gridrowsinsearch <- function(searchmethod, grid){
 
 ## PREDICTION ================================================
 
-combinationevaluation <- function(predictors, gridclassobject, nholdout, searchmethod, predict, cluster, outlier){
+combinationevaluation <- function(predictors, gridclassobject, nholdout, searchmethod, predict, cluster){
 
-  # initializations
-  grid <- gridclassobject
-  fitControl <- caret::trainControl(method="boot", number=2, savePredictions=TRUE)
+  # PREPARATIONS
+
+  result <- vector("list", length=5)
 
   # grid rows to be included based on search argument
-  gridrowsincludedinsearch <- gridrowsinsearch(searchmethod, grid)
+  gridrowsincludedinsearch <- gridrowsinsearch(searchmethod, gridclassobject)
 
-  # initializations
-  if (ncol(grid@grid) > 1){charactergrid <- apply(grid@grid[gridrowsincludedinsearch,], 2, as.character)}
-  if (ncol(grid@grid) == 1){
-    charactergrid <- apply(data.frame(unlist(grid@grid[gridrowsincludedinsearch,])), 2, as.character)
-    colnames(charactergrid) <- "Preprocessor"
-    }
+  # initialize result variables with NA's
+  outmean <- data.frame(matrix(nrow=length(gridrowsincludedinsearch), ncol=length(predictors)+1))
+  outsd <- data.frame(matrix(nrow=length(gridrowsincludedinsearch), ncol=length(predictors)+1))
+  cltend <- rep(NA, length(gridrowsincludedinsearch))
 
-
-  ncomputations <- length(predictors)+1
-  outmean <- data.frame(matrix(nrow=length(gridrowsincludedinsearch), ncol=ncomputations))
-  outsd <- data.frame(matrix(nrow=length(gridrowsincludedinsearch), ncol=ncomputations))
-  cltend <- numeric(length(gridrowsincludedinsearch))
-  orhquantile <- numeric(length(gridrowsincludedinsearch))
-  result <- list(5)
-
-  # for each selected row in the grid
+  # FOR EACH ROW IN THE GRID SELECTED BY SEARCH TYPE IN gridrowsincludedinsearch
 
   cat("Combination number in process:")
 
@@ -141,40 +117,49 @@ combinationevaluation <- function(predictors, gridclassobject, nholdout, searchm
   {
     cat(" ",j,"/",length(gridrowsincludedinsearch), sep="")
 
-    dat <- grid@data[[j]]
+    # extract a data frame from gridclassobject
+
+    dat <- gridclassobject@data[[j]]
     dat1 <- data.frame(y=dat@y, x=dat@x)
 
-    # classification accuracy
+    # compute classification accuracy
 
     if (predict==TRUE) {
 
     holdoutaccuracies <- getprogrammaticprediction(dat1, predictors, nholdout)
-    outmean[which(gridrowsincludedinsearch==j),] <- apply(holdoutaccuracies, 2, function(x) mean(x, na.rm=TRUE))
-    outsd[which(gridrowsincludedinsearch==j),] <- apply(holdoutaccuracies, 2, function(x) sd(x, na.rm=TRUE))
+
+      # compute mean and sd from raw holdoutaccuracy data
+      outmean[which(gridrowsincludedinsearch==j),] <- apply(holdoutaccuracies, 2, function(x) mean(x, na.rm=TRUE))
+      outsd[which(gridrowsincludedinsearch==j),] <- apply(holdoutaccuracies, 2, function(x) sd(x, na.rm=TRUE))
+
     }
 
     # clustering tendency
 
     if (cluster==TRUE) {
     cltend[which(gridrowsincludedinsearch==j)] <- gethopkins(dat)
-    }
 
-    # outlier tendency
-
-    if (outlier==TRUE) {
-    orhquantile[which(gridrowsincludedinsearch==j)] <- getorh(dat)
     }
 
   }
 
+  # initialize grid slot
+
   result[[1]] <- outmean
   result[[2]] <- outsd
   result[[3]] <- cltend
-  result[[4]] <- orhquantile
-  result[[5]] <- charactergrid
+  result[[4]] <- NA
+  result[[5]] <- getgridascharacter(gridclassobject, gridrowsincludedinsearch)
 
   return(result)
 }
 
+getgridascharacter <- function(grid, gridrowsincludedinsearch){
+  if (ncol(grid@grid) > 1){charactergrid <- apply(grid@grid[gridrowsincludedinsearch,], 2, as.character)}
+  if (ncol(grid@grid) == 1){
+    charactergrid <- apply(data.frame(unlist(grid@grid[gridrowsincludedinsearch,])), 2, as.character)
+    colnames(charactergrid) <- "Preprocessor"}
+  return(charactergrid)
+}
 
 

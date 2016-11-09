@@ -9,7 +9,7 @@ setphase(phasename, preprocessor, preimpute)
 \arguments{
 \item{phasename}{(character) name of the phase}
 
-\item{preprocessor}{(character) vector of preprocessors (see ?setpreprocessor) belonging to the phase}
+\item{preprocessor}{(character) vector of preprocessors belonging to the phase}
 
 \item{preimpute}{(logical) whether phase is missing value imputation}
 }
@@ -21,10 +21,10 @@ Preprocessing phases consist of preprocessing techniques defined with setpreproc
 Phases can be defined with setphase() and combined to a grid of combinations with setgrid().
 }
 \details{
-All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function 'setpreprocessor()'. \cr
-If dataset contains missing values, missing value imputation must be the first phase.
+All elements of argument 'preprocessor' must point to PreprocessorClass objects constructed with function setpreprocessor(). \cr
+If dataset contains missing values, missing value imputation must be the first phase when combining phases to grid with setgrid().
 }
 \examples{
-## imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
+imputation <- setphase("imputation", c("naomit", "meanimpute"), TRUE)
 }
 

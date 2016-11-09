@@ -18,6 +18,7 @@ techniques (i.e. functions) take as input and must return a DataClass object. Se
 Argument 'data' must have only numeric columns and one factor column.
 }
 \examples{
-## dataobject <- initializedataclassobject(iris)
+dataobject <- initializedataclassobject(iris)
 }
+\keyword{internal}
 

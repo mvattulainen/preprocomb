@@ -13,29 +13,47 @@ Preprocessing is often the most time-consuming phase in data analysis
 and preprocessing transformations interdependent in unexpected
 ways. This package helps to make preprocessing faster and more effective. It
 provides an S4 framework for creating and evaluating preprocessing combinations
-for classification, clustering and outlier detection. The framework supports
+for classification and clustering. The framework supports
 adding of user-defined preprocessors and preprocessing phases. Default preprocessors 
 can be used for low variance removal, missing value imputation, scaling, outlier 
 removal, noise smoothing, feature selection and class imbalance correction.
 
-## Test data
+## Preprocessing combinations
 
-Let's start by adding contaminations to Iris-data to simulate the need for preprocessing:
+The method implemented by package 'preprocomb' is based on a conference paper:
+"Vattulainen, M.(2014) A method to improve the predictive power of a business performance measurement system by data preprocessing combinations: two cases in predictive classification of service sales volume from balanced data. In Ahmad Ghazawneh, Jacob Nørbjerg and Jan Pries-Heje(eds.) Proceedings of the 37th Information Systems Research Seminar in Scandinavia (IRIS 37), Ringsted, Denmark, 10-13 August 2014. ISBN 978-87-7349-876-7 (USB)
 
-```{r}
-set.seed(1)
-testdata <- iris
-testdata[sample(1:150,40),3] <- NA # add missing values to the third variable
-testdata[,4] <- rnorm(150, testdata[,4], 2) # add noise to the fourth variable
-testdata$Irrelevant <- runif(150, 0, 1) # add an irrelevant feature
+## Getting started
+
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 400)
 ```
 
-## Interactive mode
+```{r}
+library(preprocomb)
+```
 
-In the interactive mode preprocessing techniques can be applied in a sequence
-with function prepro(). The resulting object contains the preprocessing call
-history, computations and the fitness of the preprocessed data for model fitting.
-In the example below missing values are imputed first with meanimpute and then outliers removed with Orh-algorithm.  Support vector machine svmRadial from kernlab package is used as a classifier. The default classifier is rpart from rpart package.
+Functions from the supporting packages ('preprosim', 'preproviz' and 'metaheur') are called
+explicitly by using the scope resolution operator ::.
+
+## Creating reproducible test data 
+
+Package 'preprosim' can be used to create contaminated data sets in a reproducible manner.
+In the example below Iris dataset is used as a basedata. 6561 versions of Iris data are 
+created having various levels of contaminations.
+
+```{r, eval=FALSE}
+examplesimulation <- preprosim::preprosimrun(seed=1, data=iris, fitmodels=FALSE)
+```
+
+A moderately contaminated data set is selected to represent the need of preprocessing.
+
+```{r}
+contaminateddf <- preprosim::getpreprosimdf(examplesimulation, c(0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1))
+str(contaminateddf)
+```
+
+## Default preprocessors
 
 ```{r, include=FALSE, cache=FALSE}
 suppressMessages(library(ggplot2))
@@ -45,38 +63,125 @@ suppressMessages(library(rpart))
 
 ```
 
+The package is intended as a platform for domain-specific preprocessing techniques.
+However, 20 default preprocessors are available for demonstration. Their names and descriptions can be seen with getpreprocessor() function.
+
+```{r}
+getpreprocessors()
+```
+
+Low-level implementation of a preprocessor in the 'preprocomb' system can be seen
+by proving the argument type="definition". In the example below the definition of 
+the first preproccessing technique is shown.
+
+```{r}
+getpreprocessors(type="definition", nro=1)
+```
+
+## Interactive mode
+
+In the interactive mode preprocessing techniques can be applied in a sequence
+with function prepro(). The resulting object contains the preprocessing call
+history, computations and the fitness of the preprocessed data for model fitting.
+In the example below missing values are imputed first with meanimpute and then outliers removed with Tukey's IQR 1.5 rule. Support vector machine 'svmRadial' from 'kernlab' package is used as a classifier. The default classifier is 'rpart' from 'rpart' package.
+
+
+
 ```{r, messages=FALSE, warnings=FALSE}
-library(preprocomb)
-step1 <- prepro(testdata, "meanimpute", model="svmRadial")
-step2 <- prepro(step1, "orhoutlier", model="svmRadial")
+step1 <- prepro(contaminateddf, "meanimpute", model="svmRadial")
+step2 <- prepro(step1, "tukeyoutlier", model="svmRadial")
 step2
 ```
 
 ## Programmatic mode
 
 In the programmatic mode search for the best combinations is executed. 
+
+### Step 1
+
 First, a grid of preprocessing combinations and corresponding preprocessed
-data sets is created. Secondly, the preprocessed data sets are evaluated for
-classification accuracy, clustering tendency and skewness of outlier scores
-In the example below the preprocessing pipeline consists 540 combinations and 
-their evaluations.  
+data sets is created with setgrid() function. Showing the resulting GridClass
+object gives the data validation results.
+
+```{r, eval=FALSE}
+examplecombgrid <- setgrid(phases=c("imputation", "scaling", "smoothing"), data=contaminateddf)
+examplecombgrid
+```
+
+
+All the combinations can be acquired with getcombinations() function and
+a specifically preprocessed data set with getpreprocombdf() function. 
+In the example below data set for combination number 7 is provided.
+```{r}
+head(getcombinations(examplecombgrid),10)
+preprocesseddf <- getpreprocombdf(examplecombgrid, 7)
+str(preprocesseddf)
+getpreprocombdf(examplecombgrid, 7, type="summary")
+```
+
+### Step 2
+
+Secondly, the preprocessed data sets are evaluated for classification accuracy.
+
+```{r, eval=FALSE}
+exampleresult <- preprocomb(grid=examplecombgrid, models=c("svmRadial"), nholdout=400, cores=2)
+```
+
+Extracting the best and worst combinations for classification:
+
+```{r, messages=FALSE, warnings=FALSE}
+exampleresult@bestclassification
+exampleresult@worstclassification
+```
+
+Results can also be plotted to see the range of classification accuracy of combinations. 
+
+```{r, messages=FALSE, warnings=FALSE, fig.width=7, fig.height=4}
+preprocombplot(exampleresult, type="boxplot")
+```
+
+For detailed analysis of the results the raw data can
+be accessed as well. In the example below the worst
+accuracy is selected.
+
+```{r, messages=FALSE, warnings=FALSE}
+min(exampleresult@rawall$svmRadialMean)
+```
+
+Wall-clock time of computing the accuracies:
+```{r, messages=FALSE, warnings=FALSE}
+exampleresult@walltime
+```
+
+## Combination optimization
+
+Package 'metaheur' can be used to apply metaheuristic optimization to 
+preprocessing grid to find near-best combinations faster:
 
 ```{r, messages=FALSE, warnings=FALSE, eval=FALSE}
-examplegrid <- setgrid(phases=c("imputation", "outliers", "scaling", "smoothing", "selection"), data=testdata)
-exampleresult <- preprocomb(grid=examplegrid, models=c("svmRadial"), nholdout=10, cluster=TRUE, outlier=TRUE, cores=2)
+examplemetaheur <- metaheur::metaheur(examplegrid, model="svmRadial", iterations = 30, nholdout = 400)
+```
+
+Extracting the near best combination:
+```{r, messages=FALSE, warnings=FALSE}
+metaheur::getbestheur(examplemetaheur)
 ```
 
 Extracting the wall-clock time of execution in minutes:
 
 ```{r, messages=FALSE, warnings=FALSE}
-exampleresult@walltime
+examplemetaheur@walltime
 ```
 
-Extracting the best combinations for classification:
 
-```{r, messages=FALSE, warnings=FALSE}
-exampleresult@bestclassification
+The search result is made possible by the characteristics of the objective function:
+
+```{r, messages=FALSE, warnings=FALSE, fig.width=7, fig.height=4}
+preprocombplot(exampleresult, type="lineplot")
 ```
+
+
+For further information, please see package 'metaheur' vignette. 
 
 ## Default options
 
@@ -86,30 +191,40 @@ techniques. There are however a set of default options available. Phases:
 - "imputation", missing value imputation
 - "variance", low variance removal
 - "smoothing", noise smoothing
+- "skewness", skewness corrections
 - "scaling", value range scaling 
 - "outliers", outlier removal
 - "sampling", class imbalance corrections
 - "selection", irrelevant feature selection
 
 Each of the phases has two or more preprocessing techniques including "noaction". 
-Available preprocessing techniques can be shown by:
 
-```{r, messages=FALSE, warnings=FALSE}
-getpreprocessor()
+There are alse six default phases each with one or several techniques
+totalling 1080 combinations and an extended version with 6480 combinations
+for binary data with all values positive. For the latter serious computing
+resources are needed for exhaustive search.
+
+```{r, messages=FALSE, warnings=FALSE, eval=FALSE}
+largegrid <- setgrid(phases=preprodefault, data=contaminateddf)
+largergrid <- setgrid(phases=preprodefaultextended, data=contaminateddf)
 ```
 
-and preprocecssor function definition by giving the name of the preprocessing technique as argument:
+## Customization
+
+The existing preprocessing techniques can be combined in new ways:
 
 ```{r, messages=FALSE, warnings=FALSE}
-getpreprocessor("basicscale")
+newimputephase <- setphase("newimputephase", c("naomit", "meanimpute"), TRUE)
 ```
 
 
-## Customization 
+## Extensions 
 
 Preproccessing techniques can be added to the system in two steps:
 
-Step 1: Function definition
+### Step 1
+
+First, new prepreprocessing techniques can be defined as functions:
 
 ```{r, messages=FALSE, warnings=FALSE}
 scaleexample <- function(dataobject) {
@@ -121,13 +236,17 @@ Notice that added preprocecessing technique definition input and output are both
 objects. The slot "y" is a factor vector containing the class labels and slot "x" the other
 variables, which all must be numeric.
 
-Step 2: Adding of the function to the system
+### Step 2
+
+Preprocessing functions are added to the system.
 
 ```{r, messages=FALSE, warnings=FALSE}
-setpreprocessor("scaleexample", "scaleexample(dataobject)")
+setpreprocessor("scaleexample", "scaleexample(dataobject)", "THIS AN EXAMPLE")
 step3 <- prepro(step2, "scaleexample", model="svmRadial") # continues the example above
 step3
 ```
+
+### Step 3
 
 Added preprocessing techniques can be added to phases and used in creating a new grid of combinations:
 
@@ -136,3 +255,42 @@ newscaling <- setphase("newscaling", c("noaction", "scaleexample"), TRUE)
 newexamplegrid <- setgrid(phases=c("imputation", "newscaling"), data=testdata)
 ```
 
+## Supporting packages
+
+Preprocessing combinations is a method to resolve preprocessing problems.
+
+For understanding the condition of the data there are two supporting 
+packages.
+
+### Preprosim
+
+Package 'preprosim' can be used to create contaminated data sets as seen
+in the beginning of this vignette. It can also be used to plot the simulation
+results to observe how the data behaves when contaminations are increased in a
+controlled manner.
+
+```{r, messages=FALSE, warnings=FALSE, fig.width=7, fig.height=4}
+simulationrun2 <- preprosim::preprosimrun(iris, param=preprosim::newparam(iris, "custom", x="misval", z="noise"), caretmodel="rpart", holdoutrounds = 2, verbose=FALSE)
+preprosim::preprosimplot(simulationrun2, "xz", x="misval", z="noise")
+```
+
+### Preproviz
+
+Package 'preproviz' can be used to visualize data quality issue
+interdependencies by means of constructing features that express
+the quality of a data point. 
+
+```{r, messages=FALSE, warnings=FALSE, fig.width=7, fig.height=7}
+viz <- preproviz::preproviz(list(contaminateddf, preprocesseddf))
+preproviz::plotVARCLUST(viz)
+preproviz::plotCMDS(viz)
+```
+
+For more details on preprosim and preproviz, please see related vignettes. 
+
+## Notes
+
+The object examplesimulation used in test data chapter of this vignette can be
+created with the shown commmand. The object stored as an 'examplesimulation' in
+package preprocomb includes only the data set number 3281 to reduce the size of
+the package.

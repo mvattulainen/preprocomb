@@ -3,6 +3,36 @@ NULL
 
 # DEFAULT PREPROCESSORS ==========================
 
+## LOG TRANSFORM
+
+logtransformaux <- function(dataobject){
+  x_new <- data.frame(apply(dataobject@x, 2, function(x) logtransformaux2(x)))
+  dataobject <- initializedataclassobject(data.frame(x_new, dataobject@y))
+}
+
+logtransformaux2 <- function(x){
+  if (min(x>0)) return(log(x))
+  else {
+    mostnegative <- min(x)
+    x <- x+abs(mostnegative)+0.00000001
+    return(log(x))
+  }
+}
+
+setpreprocessor("logtransform", "logtransformaux(dataobject)", "log transforms with base exp(1)")
+
+reciprocaltransformaux <- function(dataobject){
+  x_new <- data.frame(apply(dataobject@x, 1:2, reciprocalaux2))
+  dataobject <- initializedataclassobject(data.frame(x_new, dataobject@y))
+}
+
+reciprocalaux2 <- function(x){
+  if (x==0) return(x)
+  if (x!=0) return(1/x)
+}
+
+setpreprocessor("reciprocaltransform", "reciprocaltransformaux(dataobject)", "computes 1/x for non-zero values")
+
 # NEAR ZERO VARIANCE
 
 nezevar <- function(dataobject){
@@ -10,25 +40,25 @@ nezevar <- function(dataobject){
   if (length(temp) !=0) {
     x_new <- dataobject@x[,-temp]
     dataobject <- initializedataclassobject(data.frame(x_new, dataobject@y))
-}
+  }
   return(dataobject)
 }
 
-setpreprocessor("nearzerovar", "nezevar(dataobject)")
+setpreprocessor("nearzerovar", "nezevar(dataobject)", "removes near zero variance variables")
 
 ## IMPUTATION
 
 naomit <- function(dataobject){
   temp <- apply(dataobject@x, 1, function(x) any(is.na(x)))
   if (any(temp==TRUE)){
-  x_new <- dataobject@x[-temp==FALSE,]
-  y_new <- dataobject@y[-temp==FALSE]
-  dataobject <- initializedataclassobject(data.frame(x_new, y_new))
-}
+    x_new <- dataobject@x[-temp==FALSE,]
+    y_new <- dataobject@y[-temp==FALSE]
+    dataobject <- initializedataclassobject(data.frame(x_new, y_new))
+  }
   return(dataobject)
 }
 
-setpreprocessor("naomit", "naomit(dataobject)")
+setpreprocessor("naomit", "naomit(dataobject)", "removes observations with missing values")
 
 # Mean imputation
 
@@ -40,13 +70,13 @@ meanimpute_aux <- function(x){
 meanimpute <- function(dataobject){
   temp <- apply(dataobject@x, 1, function(x) any(is.na(x)))
   if (any(temp==TRUE)){
-  x_new <- data.frame(apply(dataobject@x, 2, function(x) meanimpute_aux(x)))
-  dataobject <- initializedataclassobject(data.frame(x_new, dataobject@y))
-}
+    x_new <- data.frame(apply(dataobject@x, 2, function(x) meanimpute_aux(x)))
+    dataobject <- initializedataclassobject(data.frame(x_new, dataobject@y))
+  }
   return(dataobject)
 }
 
-setpreprocessor("meanimpute", "meanimpute(dataobject)")
+setpreprocessor("meanimpute", "meanimpute(dataobject)", "imputes missing values with mean in the variable")
 
 # mean class imputation
 
@@ -59,35 +89,23 @@ meanclass <- function(dataobject){
   return(dataobject)
 }
 
-setpreprocessor("meanclassimpute", "meanclass(dataobject)")
+setpreprocessor("classmeanimpute", "meanclass(dataobject)", "imputes missing values with variable mean of the class")
 
-# knnimputation
-
-knnimpute <- function(dataobject){
-  temp <- apply(dataobject@x, 1, function(x) any(is.na(x)))
-  if (any(temp==TRUE)){
-  x_new <- DMwR::knnImputation(dataobject@x, k=5)
-  dataobject <- initializedataclassobject(data.frame(x_new, dataobject@y))
-  }
-  return(dataobject)
-}
-
-setpreprocessor("knnimpute", "knnimpute(dataobject)")
 
 # random forest imputation
 
 rfimputefunc <- function(dataobject){
   temp <- apply(dataobject@x, 1, function(x) any(is.na(x)))
   if (any(temp==TRUE)){
-  res <- randomForest::rfImpute(dataobject@y ~ ., dataobject@x)
-  x_new <- res[,2:ncol(res)]
-  y_new <- res[,1]
-  dataobject <- initializedataclassobject(data.frame(x_new, y_new))
+    res <- randomForest::rfImpute(dataobject@y ~ ., dataobject@x)
+    x_new <- res[,2:ncol(res)]
+    y_new <- res[,1]
+    dataobject <- initializedataclassobject(data.frame(x_new, y_new))
   }
   return(dataobject)
 }
 
-setpreprocessor("randomforestimpute", "rfimputefunc(dataobject)")
+setpreprocessor("randomforestimpute", "rfimputefunc(dataobject)", "imputes missing values with random forest impute")
 
 ## SCALING
 
@@ -97,7 +115,7 @@ basicscaling <- function(dataobject){
   dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@x, center=FALSE), dataobject@y))
 }
 
-setpreprocessor("basicscale", "basicscaling(dataobject)")
+setpreprocessor("basicscale", "basicscaling(dataobject)", "scales the values without centering")
 
 # center
 
@@ -105,7 +123,7 @@ centerscaling <- function(dataobject){
   dataobject <- initializedataclassobject(data.frame(x=scale(dataobject@x, center=TRUE), dataobject@y))
 }
 
-setpreprocessor("centerscale", "centerscaling(dataobject)")
+setpreprocessor("centerscale", "centerscaling(dataobject)", "centers and scales the values")
 
 # min-max scaling
 
@@ -119,151 +137,154 @@ minmaxscaling <- function(dataobject){
   dataobject <- initializedataclassobject(data.frame(x=x_new, dataobject@y))
 }
 
-setpreprocessor("minmaxscale", "minmaxscaling(dataobject)")
+setpreprocessor("minmaxscale", "minmaxscaling(dataobject)", "scales by minmax scaling")
 
 decimalscaling <- function(dataobject){
   m <- apply(dataobject@x,2,max)
   v <- round(log10(m),0)
   c <- 10^v
   x_new <- sweep(dataobject@x, 2, c, `/`)
-dataobject <- initializedataclassobject(data.frame(x=x_new, y=dataobject@y))
+  dataobject <- initializedataclassobject(data.frame(x=x_new, y=dataobject@y))
 }
 
-setpreprocessor("decimalscale", "decimalscaling(dataobject)")
-
-softmaxscaling <- function(dataobject){
-  dataobject <- initializedataclassobject(data.frame(x=data.frame(apply(dataobject@x, 2, DMwR::SoftMax)), dataobject@y))
-}
-
-setpreprocessor("softmaxscale", "softmaxscaling(dataobject)")
-
+setpreprocessor("decimalscale", "decimalscaling(dataobject)", "scales by decimal scaling")
 
 # OUTLIER REMOVAL
 
-orhcut <- function(dataobject){
-  x_original <- dataobject@x
-  y_original <- dataobject@y
-  orh_score <- suppressMessages(DMwR::outliers.ranking(x_original))
-  orh_rank <- orh_score$prob.outliers[orh_score$rank.outliers]
-  orh_cut <- quantile(orh_rank, .95)
-  orh_obs <- as.integer(names(which(orh_rank >= orh_cut)))
-  x_preprocessed <- x_original[-orh_obs,]
-  y_preprocessed <- y_original[-orh_obs]
-  result <- initializedataclassobject(data.frame(x_preprocessed, y=y_preprocessed))
+tukeyoutlieraux <- function(dataobject){
+
+  out <- apply(dataobject@x, 2, tukeyaux)
+
+  if (all(out==FALSE)) {return(dataobject)}
+
+  if (any(out==TRUE)) {
+
+    out2 <- apply(out, 1, any)
+    out3 <- out2==FALSE
+    x_new <- dataobject@x[out3,]
+    y_new <- dataobject@y[out3]
+    result <- initializedataclassobject(data.frame(x=x_new, y=y_new))
+    return(result)
+  }
 }
-
-setpreprocessor("orhoutlier", "orhcut(dataobject)")
-
-## CLASS IMBALANCE CORRECTIONS
-
-# oversampling
-
-oversample <- function(dataobject){
-
-  data <- data.frame(dataobject@x, y=dataobject@y)
-
-  if (nlevels(data$y) > 2) {stop("Oversampling can only be applied to binary class.")}
-
-  freq <- table(data$y)
-  temp <- order(freq)
-  nsample <- freq[temp[2]]-freq[temp[1]]
-  indexes <- which(data$y==names(freq)[temp[1]])
-  tempsample <- sample(indexes, nsample, replace=TRUE)
-  newdata <- initializedataclassobject(data.frame(rbind(data, data[tempsample,])))
-  return(newdata)
-}
-
-setpreprocessor("oversample", "oversample(dataobject)")
-
-# undersampling
-
-undersample <- function(dataobject){
-
-  data <- data.frame(dataobject@x, y=dataobject@y)
-
-  if (nlevels(data$y) > 2) {stop("Undersampling can only be applied to binary class.")}
-
-  freq <- table(data$y)
-  temp <- order(freq)
-  nsample <- freq[temp[1]]
-  indexes <- which(data$y==names(freq)[temp[2]])
-  indexes2 <- which(data$y==names(freq)[temp[1]])
-  tempsample <- sample(indexes, nsample)
-  finalsample <- c(indexes2, tempsample)
-  newdata <- initializedataclassobject(data[finalsample,])
-  return(newdata)
-}
-
-setpreprocessor("undersample", "undersample(dataobject)")
-
-# smote sampling
-
-#smotesample <- function(dataobject){
-#  temp <- data.frame(dataobject@x, y=dataobject@y)
-#
-#  if (nlevels(temp$y) > 2) {stop("SMOTE can only be applied to binary class.")}
-#
-#  temp1 <- as.numeric(table(temp$y))
-#  temp2 <- order(temp1)
-#  temp3 <- temp1[temp2[2]]/temp1[temp2[1]]
-#  temp4 <- temp1[temp2[2]]/(temp1[temp2[2]]-temp1[temp2[1]])
-#  newData <- DMwR::SMOTE(y ~ ., temp, perc.over = 100*temp3, perc.under=100*temp4)
-#  dataobject <- initializedataclassobject(newData)
-#}
-
-#setpreprocessor("smotesample", "smotesample(dataobject)")
-
-## FEATURE SELECTION
-
-# random forest importance
-
-rfimportance <- function(dataobject, qt){
-  rf.imp <- randomForest::randomForest(dataobject@y ~ ., data=dataobject@x, ntree=100, keep.forest=FALSE, importance=TRUE)
-  temp <- data.frame(randomForest::importance(rf.imp))
-  temp1 <- temp$MeanDecreaseAccuracy > quantile(temp$MeanDecreaseAccuracy, qt)
-  dataobject@x  <- dataobject@x[,temp1]
-  return(dataobject)
-}
-
-setpreprocessor("rfselect75", "rfimportance(dataobject, .25)")
-setpreprocessor("rfselect50", "rfimportance(dataobject, .50)")
-
-# smoothing with lowess
-
-smoothlowess <- function(dataobject){
-  y <- dataobject@x
-  result <-data.frame(round(apply(y, 2, function(y) lowess(y[order(y)], f=1/2)[[2]][match(y, y[order(y)])]),2))
-  dataobject <- initializedataclassobject(data.frame(result, y=dataobject@y))
+  tukeyaux <- function(x){
+    out <- boxplot(x)$out
+    id <- x %in% out
   }
 
-setpreprocessor("lowesssmooth", "smoothlowess(dataobject)")
+  setpreprocessor("tukeyoutlier", "tukeyoutlieraux(dataobject)", "removes all points that have +1.5IQR outliers")
 
-smoothcoarse <- function(dataobject){
-   x_new <- data.frame(apply(dataobject@x, 2, function(y) round(y, digits=-log10(abs(y))+1)))
-   dataobject <- initializedataclassobject(data.frame(x=x_new, y=dataobject@y))
-}
+  ## CLASS IMBALANCE CORRECTIONS
 
-setpreprocessor("coarsesmooth", "smoothcoarse(dataobject)")
+  # oversampling
 
-setpreprocessor("noaction", "identity(dataobject)")
+  oversample <- function(dataobject){
 
-# DEFAULT PHASES ==========================
+    data <- data.frame(dataobject@x, y=dataobject@y)
+
+    if (nlevels(data$y) > 2) {stop("Oversampling can only be applied to binary class.")}
+
+    freq <- table(data$y)
+    temp <- order(freq)
+    nsample <- freq[temp[2]]-freq[temp[1]]
+    indexes <- which(data$y==names(freq)[temp[1]])
+    tempsample <- sample(indexes, nsample, replace=TRUE)
+    newdata <- initializedataclassobject(data.frame(rbind(data, data[tempsample,])))
+    return(newdata)
+  }
+
+  setpreprocessor("oversample", "oversample(dataobject)", "oversamples the less frequent class")
+
+  # undersampling
+
+  undersample <- function(dataobject){
+
+    data <- data.frame(dataobject@x, y=dataobject@y)
+
+    if (nlevels(data$y) > 2) {stop("Undersampling can only be applied to binary class.")}
+
+    freq <- table(data$y)
+    temp <- order(freq)
+    nsample <- freq[temp[1]]
+    indexes <- which(data$y==names(freq)[temp[2]])
+    indexes2 <- which(data$y==names(freq)[temp[1]])
+    tempsample <- sample(indexes, nsample)
+    finalsample <- c(indexes2, tempsample)
+    newdata <- initializedataclassobject(data[finalsample,])
+    return(newdata)
+  }
+
+  setpreprocessor("undersample", "undersample(dataobject)", "undersamples the more frequent class")
+
+  ## FEATURE SELECTION
+
+  # random forest importance
+
+  rfimportance <- function(dataobject, qt){
+    rf.imp <- randomForest::randomForest(dataobject@y ~ ., data=dataobject@x, ntree=100, keep.forest=FALSE, importance=TRUE)
+    temp <- data.frame(randomForest::importance(rf.imp))
+    temp1 <- temp$MeanDecreaseAccuracy > quantile(temp$MeanDecreaseAccuracy, qt)
+    dataobject@x  <- dataobject@x[,temp1]
+    return(dataobject)
+  }
+
+  setpreprocessor("rfselect75", "rfimportance(dataobject, .25)", "selects 75% most important variables by random forest")
+  setpreprocessor("rfselect50", "rfimportance(dataobject, .50)", "selects 50% most important variables by random forest")
+
+  # smoothing with lowess
+
+  smoothlowess <- function(dataobject){
+    y <- dataobject@x
+    result <-data.frame(round(apply(y, 2, function(y) lowess(y[order(y)], f=1/2)[[2]][match(y, y[order(y)])]),2))
+    dataobject <- initializedataclassobject(data.frame(result, y=dataobject@y))
+  }
+
+  setpreprocessor("lowesssmooth", "smoothlowess(dataobject)", "smooths by LOWESS algorithm")
+
+  smoothcoarse <- function(dataobject){
+    x_new <- data.frame(apply(dataobject@x, 2, function(y) round(y, digits=-log10(abs(y))+1)))
+    dataobject <- initializedataclassobject(data.frame(x=x_new, y=dataobject@y))
+  }
+
+  setpreprocessor("coarsesmooth", "smoothcoarse(dataobject)", "smooths by retaining only two non-zero digits")
+
+  integerbin <- function(dataobject){
+    x_new <- data.frame(apply(dataobject@x, 2, function(z) cut(z, breaks=10, labels=FALSE)))
+    dataobject <- initializedataclassobject(data.frame(x=x_new, y=dataobject@y))
+  }
+
+  setpreprocessor("binningsmooth", "integerbin(dataobject)", "smooths by binning")
+
+  setpreprocessor("noaction", "identity(dataobject)", "does not do any preprocessing")
+
+  # DEFAULT PHASES ==========================
 
 
-#### PHASES
+  #### PHASES
 
-imputation <- setphase("imputation", c("naomit", "meanimpute", "meanclassimpute", "knnimpute", "randomforestimpute"), TRUE)
-variance <- setphase("variance", c("noaction", "nearzerovar"), FALSE)
-smoothing <- setphase("smoothing", c("noaction", "coarsesmooth", "lowesssmooth"), FALSE)
-scaling <- setphase("scaling", c("noaction", "basicscale", "centerscale", "minmaxscale", "decimalscale", "softmaxscale"), FALSE)
-outliers <- setphase("outliers", c("noaction", "orhoutlier"), FALSE)
-sampling <- setphase("imbalance", c("noaction", "oversample", "undersample"), FALSE) # add:  "smotesample"
-selection <- setphase("selection", c("noaction", "rfselect50", "rfselect75"), FALSE)
+  missingvalues <- setphase("missingvalues", c("naomit", "meanimpute", "classmeanimpute", "randomforestimpute"), TRUE)
+  missingvariance <- setphase("missingvariance", c("noaction", "nearzerovar"), FALSE)
+  noise <- setphase("noise", c("noaction", "coarsesmooth", "binningsmooth", "lowesssmooth"), FALSE)
+  valuerange <- setphase("valuerange", c("noaction", "basicscale", "centerscale", "minmaxscale", "decimalscale", "logtransform", "reciprocaltransform"), FALSE)
+  outliers <- setphase("outliers", c("noaction", "tukeyoutlier"), FALSE)
+  imbalance <- setphase("imbalance", c("noaction", "oversample", "undersample"), FALSE)
+  irrelfeatures <- setphase("irrelfeatures", c("noaction", "rfselect50", "rfselect75"), FALSE)
 
-#' seven default phases with preprocessing techniques
-#'
-#' Totals 3200 combinations. preprodefault object can be used as default phases for setgrid().
-#' @examples
-#' ## grid <- setgrid(preprodefault, iris)
-#' @export
-preprodefault <- c("imputation", "variance", "smoothing", "scaling", "outliers", "sampling", "selection")
+  #' six default phases with preprocessing techniques
+  #'
+  #' Totals 1080 combinations. preprodefault object can be used as default phases for setgrid().
+  #' @examples
+  #' ## grid <- setgrid(preprodefault, iris)
+  #' @export
+  #' @keywords internal
+  preprodefault <- c("missingvalues", "missingvariance", "noise", "valuerange", "outliers", "irrelfeatures")
+
+  #' eigth default phases with preprocessing techniques
+  #'
+  #' Totals 6480 combinations. preprodefaultextended object can be used as default phases for setgrid().
+  #' @examples
+  #' ## grid <- setgrid(preprodefaultextended, iris[1:90,])
+  #' @export
+  #' @keywords internal
+  preprodefaultextended <- c("missingvalues", "missingvariance", "noise", "valuerange", "outliers", "irrelfeatures", "imbalance")
+
